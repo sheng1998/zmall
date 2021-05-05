@@ -1,0 +1,13 @@
+/*显示省略号*/
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* flex 垂直水平居中 */
+.xmf-flex {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
