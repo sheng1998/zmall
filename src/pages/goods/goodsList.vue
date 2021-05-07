@@ -138,6 +138,7 @@
       </div>
     </el-card>
 
+    <!-- 商品列表 -->
     <el-card class="class-goods-card">
       <xmf-goods-item
         :goods="goods"
@@ -146,8 +147,6 @@
         :comment="true"
       ></xmf-goods-item>
     </el-card>
-
-    <div style="height: 700px;"></div>
 
     <!-- 尾部 -->
     <xmf-footer></xmf-footer>

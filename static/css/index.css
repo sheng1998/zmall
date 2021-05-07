@@ -42,3 +42,21 @@
   color: #409eff;
   font-size: 20px;
 }
+
+.xmf-width-60 {
+  width: 60px;
+}
+
+.xmf-flex-only {
+  display: flex;
+}
+
+.xmf-flex-justify-content-center {
+  display: flex;
+  justify-content: center;
+}
+
+.xmf-flex-align-items-center {
+  display: flex;
+  align-items: center;
+}

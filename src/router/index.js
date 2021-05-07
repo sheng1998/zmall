@@ -3,6 +3,9 @@ import Router from 'vue-router'
 import Home from '@/pages/home/home'
 import GoodsList from '@/pages/goods/goodsList'
 import GoodsDetails from '@/pages/goods/goodsDetails'
+import DetailsMain from '@/pages/goods/details/detailsMain'
+import DetailsParameter from '@/pages/goods/details/detailsParameter'
+import DetailsComment from '@/pages/goods/details/detailsComment'
 
 Vue.use(Router)
 
@@ -18,7 +21,7 @@ export default new Router({
       component: Home
     },
     {
-      path: '/list',
+      path: '/goods/list',
       name: 'list',
       component: GoodsList
     },
@@ -28,9 +31,26 @@ export default new Router({
       component: GoodsList
     },
     {
-      path: '/details',
+      path: '/goods/details',
       name: 'details',
-      component: GoodsDetails
+      component: GoodsDetails,
+      children: [
+        {
+          path: 'main',
+          name: 'detailsMain',
+          component: DetailsMain
+        },
+        {
+          path: 'parameter',
+          name: 'detailsParameter',
+          component: DetailsParameter
+        },
+        {
+          path: 'comment',
+          name: 'detailsComment',
+          component: DetailsComment
+        }
+      ]
     }
   ]
 })
