@@ -5,7 +5,7 @@
         <div class="seckill-item miaosha">
           <!-- img -->
           <div class="seckill-img xmf-flex">
-            <img src="../../static/image/home/seckill.png" alt="" />
+            <img src="../../../static/image/home/seckill.png" alt="" />
           </div>
 
           <!-- iconfont -->
@@ -31,10 +31,12 @@
 
         <div class="seckill-item" v-for="(item, index) in 5" :key="index">
           <div class="item-img xmf-flex">
-            <img
+            <el-image
               src="http://img30.360buyimg.com/seckillcms/s140x140_jfs/t1/193934/12/573/195753/608b676cEed33c355/ec4e0f561bd4358d.jpg"
               alt=""
-            />
+              fit="cover "
+            >
+            </el-image>
           </div>
           <div class="item-title xmf-flex">
             <div class="ellipsis">这是标题这是标题这是标题这是标题</div>
@@ -144,12 +146,12 @@ export default {
           margin-right: 15px;
         }
 
-        .item-img {
-          img {
-            width: 140px;
-            height: 140px;
-          }
-        }
+        // .item-img {
+        //   img {
+        //     width: 140px;
+        //     height: 140px;
+        //   }
+        // }
 
         .item-title {
           height: 50px;

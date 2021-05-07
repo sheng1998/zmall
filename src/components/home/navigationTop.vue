@@ -112,7 +112,7 @@ export default {
 <style lang="less">
 .nav-top {
   height: 48px;
-  margin-top: 20px;
+  margin-top: 80px;
   position: relative;
 
   .el-menu,

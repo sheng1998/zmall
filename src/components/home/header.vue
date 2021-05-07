@@ -3,12 +3,12 @@
     <el-row style="height: 100%;">
       <!-- 商城图标 -->
       <el-col :span="5" class="my-home-logo xmf-flex">
-        <img src="../../static/image/logo/logo.png" alt="" />
+        <img src="../../../static/image/logo/logo.png" alt="" />
       </el-col>
 
       <!-- 商城名字 -->
       <el-col :span="5" class="logo-font">
-        <img src="../../static/image/font_img/font.png" alt="" />
+        <img src="../../../static/image/font_img/font.png" alt="" />
       </el-col>
 
       <!-- 搜索框 -->
@@ -66,7 +66,12 @@ export default {
 <style lang="less">
 .my-home-header {
   background-color: #f5f5f5;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
   color: #666666;
+  z-index: 99999;
 
   a {
     color: #666666;
