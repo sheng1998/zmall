@@ -147,23 +147,20 @@
         :comment="true"
       ></xmf-goods-item>
     </el-card>
-
-    <!-- 尾部 -->
-    <xmf-footer></xmf-footer>
   </div>
 </template>
 
 <script>
 import xmfFixedBottom from '../../components/fixedBottom/fixedBottom'
 import xmfHeader from '../../components/header/header'
-import xmfFooter from '../../components/footer/footer'
 import xmfBreadCrumb from '../../components/breadcrumb/breadcrumb'
 import xmfGoodsItem from '../../components/goods/goods'
 
 export default {
   data () {
     return {
-      goodsList: [
+      goodsList: [],
+      goodsList1: [
         {
           img:
             'https://res.vmallres.com/pimages//product/6941487203307/428_428_FE364E05A0D86CE39BE00E1EE1D18350AA8E982DFAFFC0A2mp.png',
@@ -323,7 +320,6 @@ export default {
   components: {
     xmfFixedBottom,
     xmfHeader,
-    xmfFooter,
     xmfBreadCrumb,
     xmfGoodsItem
   }
@@ -338,7 +334,7 @@ export default {
 
   .xmf-breadcrumb {
     margin-bottom: 15px;
-    margin-top: 80px;
+    padding-top: 80px;
     margin-left: 50px;
   }
 

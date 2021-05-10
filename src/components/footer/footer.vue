@@ -40,9 +40,10 @@ export default {
   color: #60606d;
   margin-top: 50px;
   height: 100px;
+  padding-bottom: 20px;
 
   .copyright {
-    margin: 30px 0 30px 80px;
+    margin: 30px 0 0 80px;
     padding-right: 15%;
 
     .title {

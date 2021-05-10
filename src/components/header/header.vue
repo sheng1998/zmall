@@ -37,13 +37,15 @@
         <div>
           <router-link to="/login">登录</router-link>
           <span>/</span>
-          <router-link to="/login">注册</router-link>
+          <router-link to="/register">注册</router-link>
         </div>
       </el-col>
 
       <!-- 个人中心 -->
       <el-col :span="2" class="to-center login-message" v-if="isLogin">
-        <span>个人中心</span>
+        <span>
+          <router-link to="personal">个人中心</router-link>
+        </span>
       </el-col>
     </el-row>
   </el-header>
@@ -54,7 +56,7 @@ export default {
   data () {
     return {
       searcVal: '',
-      isLogin: true
+      isLogin: false
     }
   },
   created () {},

@@ -378,7 +378,7 @@ export default {
   .shopping-car-list {
     display: flex;
     justify-content: center;
-    margin-top: 80px;
+    padding-top: 80px;
 
     thead {
       tr {

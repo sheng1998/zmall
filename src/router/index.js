@@ -1,5 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import Login from '@/pages/login/login'
+import Register from '@/pages/register/register'
 import Home from '@/pages/home/home'
 import GoodsList from '@/pages/goods/goodsList'
 import GoodsDetails from '@/pages/goods/goodsDetails'
@@ -17,6 +19,16 @@ export default new Router({
     {
       path: '/',
       redirect: '/home'
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: Login
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: Register
     },
     {
       path: '/home',

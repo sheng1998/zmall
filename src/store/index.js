@@ -7,12 +7,15 @@ Vue.use(Vuex)
 // 创建VueX对象
 const store = new Vuex.Store({
   state: {
-    // 存放的键值对就是所要管理的状态
-    editGoodsId: ''
+    loginDiaVisible: false,
+    registerDiaVisible: false
   },
   mutations: {
-    setEditGoodsId (state, id) {
-      this.state.editGoodsId = id
+    setLoginDiaVisible (state, flag) {
+      state.loginDiaVisible = flag
+    },
+    setRegisterDiaVisible (state, flag) {
+      state.registerDiaVisible = flag
     }
   }
 })

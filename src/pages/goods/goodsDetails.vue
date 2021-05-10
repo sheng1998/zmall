@@ -106,22 +106,19 @@
           :router="true"
         >
           <!-- 商品详情 -->
-          <el-menu-item index="main">商品详情</el-menu-item>
+          <el-menu-item index="/goods/details/main">商品详情</el-menu-item>
 
           <!-- 规格参数 -->
-          <el-menu-item index="parameter">规格参数</el-menu-item>
+          <el-menu-item index="/goods/details/parameter">规格参数</el-menu-item>
 
           <!-- 用户评论 -->
-          <el-menu-item index="comment">用户评论</el-menu-item>
+          <el-menu-item index="/goods/details/comment">用户评论</el-menu-item>
         </el-menu>
       </div>
       <div class="goods-details-content">
         <router-view></router-view>
       </div>
     </div>
-
-    <!-- 尾部 -->
-    <xmf-footer></xmf-footer>
   </div>
 </template>
 
@@ -129,7 +126,6 @@
 import xmfFixedBottom from '../../components/fixedBottom/fixedBottom'
 import xmfHeader from '../../components/header/header'
 import xmfBreadCrumb from '../../components/breadcrumb/breadcrumb'
-import xmfFooter from '../../components/footer/footer'
 export default {
   data () {
     return {
@@ -224,7 +220,6 @@ export default {
   components: {
     xmfFixedBottom,
     xmfHeader,
-    xmfFooter,
     xmfBreadCrumb
   }
 }
