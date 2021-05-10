@@ -1,6 +1,6 @@
 <template>
-  <div class="details-main">
-      商品详情页
+  <div class="personal">
+      个人中心页面
   </div>
 </template>
 
@@ -16,8 +16,7 @@ export default {
 </script>
 
 <style lang="less">
-.details-main {
-  margin: 0 50px;
-  margin-top: 30px;
+.personal {
+    margin-top: 100px;
 }
 </style>

@@ -6,6 +6,9 @@ import GoodsDetails from '@/pages/goods/goodsDetails'
 import DetailsMain from '@/pages/goods/details/detailsMain'
 import DetailsParameter from '@/pages/goods/details/detailsParameter'
 import DetailsComment from '@/pages/goods/details/detailsComment'
+import ShoppingCar from '@/pages/goods/goodscar/shoppingCar'
+import GoodsOrder from '@/pages/goods/order/order'
+import Personal from '@/pages/personal/personal'
 
 Vue.use(Router)
 
@@ -51,6 +54,21 @@ export default new Router({
           component: DetailsComment
         }
       ]
+    },
+    {
+      path: '/shoppingcar',
+      name: 'shoppingcar',
+      component: ShoppingCar
+    },
+    {
+      path: '/goods/order',
+      name: 'goodsorder',
+      component: GoodsOrder
+    },
+    {
+      path: '/personal',
+      name: 'personal',
+      component: Personal
     }
   ]
 })

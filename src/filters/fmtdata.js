@@ -2,6 +2,6 @@
 import Vue from 'vue'
 import moment from 'moment'
 
-Vue.filter('fmtdata', date => {
+Vue.filter('fmtdate', date => {
   return moment(date).format('YYYY-MM-DD')
 })

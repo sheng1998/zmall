@@ -8,12 +8,14 @@
     <xmf-header></xmf-header>
 
     <!-- 顶部导航栏 -->
-    <xmf-nav-top></xmf-nav-top>
+    <!-- <xmf-nav-top></xmf-nav-top> -->
+    <xmf-nav></xmf-nav>
 
-    <!-- 侧边导航栏 -->
+    <!-- 轮播图 -->
     <div class="xmf-flex main">
       <el-card class="home-card">
-        <xmf-nav-left></xmf-nav-left>
+        <!-- <xmf-nav-left></xmf-nav-left> -->
+        <xmf-carousel></xmf-carousel>
       </el-card>
     </div>
 
@@ -34,13 +36,13 @@
 <script>
 import xmfBackTop from '../../components/backTop/backTop'
 import xmfShoppingCar from '../../components/shoppingCar/shoppingCar'
-import xmfHeader from '../../components/home/header'
-import xmfNavTop from '../../components/home/navigationTop'
-import xmfNavLeft from '../../components/home/navigationLeft'
+import xmfHeader from '../../components/header/header'
+import xmfNav from '../../components/home/nav'
+import xmfCarousel from '../../components/home/carousel'
 import xmfSeckill from '../../components/home/seckill'
 import xmfHotGoods from '../../components/home/hotGoods'
 import xmfGuessYouLike from '../../components/home/guessYouLike'
-import xmfFooter from '../../components/home/footer'
+import xmfFooter from '../../components/footer/footer'
 import xmfFixedBottom from '../../components/fixedBottom/fixedBottom'
 export default {
   data () {
@@ -53,8 +55,8 @@ export default {
     xmfBackTop,
     xmfShoppingCar,
     xmfHeader,
-    xmfNavTop,
-    xmfNavLeft,
+    xmfNav,
+    xmfCarousel,
     xmfSeckill,
     xmfHotGoods,
     xmfGuessYouLike,

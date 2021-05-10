@@ -1,6 +1,6 @@
 <template>
   <div class="back-top">
-    <el-backtop :bottom="50" :visibility-height='200' style="dispaly: fixed;">
+    <el-backtop :bottom="50" :visibility-height="200" style="dispaly: fixed;">
       <el-tooltip
         class="item"
         effect="dark"
@@ -44,6 +44,10 @@ export default {
       font-size: 20px;
       font-weight: 700;
     }
+  }
+
+  .el-backtop {
+    z-index: 99999;
   }
 }
 </style>

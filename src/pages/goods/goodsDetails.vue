@@ -120,8 +120,6 @@
       </div>
     </div>
 
-    <div style="height: 700px;"></div>
-
     <!-- 尾部 -->
     <xmf-footer></xmf-footer>
   </div>
@@ -129,9 +127,9 @@
 
 <script>
 import xmfFixedBottom from '../../components/fixedBottom/fixedBottom'
-import xmfHeader from '../../components/home/header'
+import xmfHeader from '../../components/header/header'
 import xmfBreadCrumb from '../../components/breadcrumb/breadcrumb'
-import xmfFooter from '../../components/home/footer'
+import xmfFooter from '../../components/footer/footer'
 export default {
   data () {
     return {

@@ -44,47 +44,68 @@
 
     <!-- 评论 -->
     <div class="comment-content">
-      <div class="xmf-flex-only">
+      <div
+        class="comment-item xmf-flex-only"
+        v-for="item in commentList"
+        :key="item.id"
+      >
+        <!-- left -->
         <div class="left">
           <div class="user-avatar">
-            <el-image src="" fit="contain"></el-image>
+            <el-image :src="item.user_avatar" fit="contain"></el-image>
           </div>
-          <div class="username">名***</div>
+          <div class="username">{{ item.username }}</div>
         </div>
+
+        <!-- right -->
         <div class="right">
           <div class="right-top">
-            <div class="comment-stars">我是星星</div>
-            <div>
-              <div class="created_time">我是时间</div>
-              <div class="praise"></div>
+            <div class="comment-stars">我是星星{{ item.stars }}</div>
+            <div class="xmf-flex-only">
+              <div class="created_time">{{ item.created_time }}</div>
+              <div class="praise">
+                <span>
+                  <i class="iconfont icondianzan"></i>
+                </span>
+                <span>
+                  {{ item.praises }}
+                </span>
+              </div>
             </div>
           </div>
+
           <div class="right-center">
-            <div class="content">
-              好产品会说话，太难买到了，真心喜欢。不容易啊，从P40到Mate40再到MATE
-              X2，终于全家人都换成华为手机了，支持国货首选华为，除非买不到，不然以后换手机肯定就是华为。产品的折叠设计秒杀市面上所有的折叠手机。
-            </div>
-            <div class="comment-image">
+            <div class="content" v-if="item.text">{{ item.text }}</div>
+            <div class="comment-image" v-if="item.imgList.length > 0">
               <el-image
-                src="https://res.vmallres.com/rms/comment/image/U0341/77C131E24773813C10BAEE10D6FFC9AC822089CA0C3D2030E7C3DEAF7C57E252/100/CA4C9F7CEF9443F2A5570B54.png"
+                :src="img"
                 fit="contain"
+                v-for="img in item.imgList"
+                :key="img"
               ></el-image>
             </div>
           </div>
+
           <div class="right-bottom">
-            <div class="product">我是产品</div>
+            <div class="product">{{ item.product }}</div>
           </div>
-          <div class="service_reply">
+
+          <div
+            class="service_reply xmf-flex-only"
+            v-if="item.service_reply.text"
+          >
             <div class="left">
-              <el-image
-                src="https://res.vmallres.com//uomcdn/CN/pms/productSales/202105/temp/E18CE3F7FCA9A6ACC3AC0FE3625A04F2.png"
-                fit="contain"
-              ></el-image>
+              <el-image :src="item.service_reply.img" fit="contain"></el-image>
             </div>
             <div class="main">
-              <div class="name"></div>
-              <div class="text"></div>
-              <div class="praises"></div>
+              <div class="name">{{ item.service_reply.name }}</div>
+              <div class="text">{{ item.service_reply.text }}</div>
+              <div class="praises">
+                <span>
+                  <i class="iconfont icondianzan"></i>
+                </span>
+                <span> ( {{ item.service_reply.praises }} ) </span>
+              </div>
             </div>
           </div>
         </div>
@@ -145,6 +166,9 @@ export default {
       ],
       commentList: [
         {
+          id: '1',
+          goods_id: '1',
+          product: '我是产品呀',
           username: '我是名字',
           user_avatar:
             'https://res.vmallres.com/rms/comment/image/U0341/77C131E24773813C10BAEE10D6FFC9AC822089CA0C3D2030E7C3DEAF7C57E252/802b65ca69007c08b81d7ed4.jpg',
@@ -159,7 +183,49 @@ export default {
             'https://res.vmallres.com/rms/comment/image/U0341/77C131E24773813C10BAEE10D6FFC9AC822089CA0C3D2030E7C3DEAF7C57E252/100/7D6A22F66097EA1895618163.png'
           ],
           service_reply: {
-            text: '',
+            name: '这是客服名字',
+            text: '这是客服评论',
+            img:
+              'https://res.vmallres.com//uomcdn/CN/pms/productSales/202105/temp/E18CE3F7FCA9A6ACC3AC0FE3625A04F2.png',
+            praises: 0
+          }
+        },
+        {
+          id: '2',
+          goods_id: '2',
+          product: '我是产品呀2',
+          username: '我是名字',
+          user_avatar:
+            'https://res.vmallres.com/rms/comment/image/U0466/5dfdc11efb06fae57ce41e2e3338f0b3/9d5673605c46d70dc6156901.jpg',
+          stars: 3.5,
+          created_time: '2020-12-20 12:00:00',
+          praises: 1,
+          text: '',
+          imgList: [
+            'https://res.vmallres.com/rms/comment/image/U0341/77C131E24773813C10BAEE10D6FFC9AC822089CA0C3D2030E7C3DEAF7C57E252/100/CA4C9F7CEF9443F2A5570B54.png',
+            'https://res.vmallres.com/rms/comment/image/U0341/77C131E24773813C10BAEE10D6FFC9AC822089CA0C3D2030E7C3DEAF7C57E252/100/FC8AEE51727162EA7FBA24F6.jpg',
+            'https://res.vmallres.com/rms/comment/image/U0341/77C131E24773813C10BAEE10D6FFC9AC822089CA0C3D2030E7C3DEAF7C57E252/100/7D6A22F66097EA1895618163.png'
+          ],
+          service_reply: {}
+        },
+        {
+          id: '3',
+          goods_id: '3',
+          product: '我是产品呀4',
+          username: '我是名字',
+          user_avatar:
+            'https://res.vmallres.com/rms/comment/image/U0466/5dfdc11efb06fae57ce41e2e3338f0b3/9d5673605c46d70dc6156901.jpg',
+          stars: 3.5,
+          created_time: '2020-12-20 12:00:00',
+          praises: 1,
+          text:
+            '好产品会说话，太难买到了，真心喜欢。不容易啊，从P40到Mate40再到MATE X2，终于全家人都换成华为手机了，支持国货首选华为，除非买不到，不然以后换手机肯定就是华为。产品的折叠设计秒杀市面上所有的折叠手机。',
+          imgList: [],
+          service_reply: {
+            name: '这是客服名字',
+            text: '这是客服评论',
+            img:
+              'https://res.vmallres.com//uomcdn/CN/pms/productSales/202105/temp/E18CE3F7FCA9A6ACC3AC0FE3625A04F2.png',
             praises: 0
           }
         }
@@ -250,23 +316,95 @@ export default {
   .comment-content {
     width: 80%;
     margin: 0 auto;
-    margin-top: 10px;
-    background-color: cyan;
 
-    .left {
-      width: 15%;
+    .comment-item {
+      margin-top: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #eaeaea;
 
-      .user-avatar {
-        width: 60px;
-        height: 60px;
-        overflow: hidden;
-        border-radius: 50%;
-        margin: 10px auto;
+      .left {
+        width: 15%;
+
+        .user-avatar {
+          width: 60px;
+          height: 60px;
+          overflow: hidden;
+          border-radius: 50%;
+          margin: 10px auto;
+        }
+
+        .username {
+          text-align: center;
+          font-size: 14px;
+        }
       }
 
-      .username {
-        text-align: center;
-        font-size: 14px;
+      .right {
+        width: 85%;
+
+        .right-top {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 10px;
+
+          .praise {
+            margin-left: 15px;
+            color: #ccc8c8;
+          }
+        }
+
+        .right-center {
+          margin-bottom: 10px;
+
+          .comment-image {
+            img {
+              width: 80px;
+              height: 80px;
+              margin-right: 15px;
+              margin-top: 20px;
+              border-radius: 5px;
+            }
+          }
+        }
+
+        .product {
+          color: #a4a4a4a4;
+          font-size: 14px;
+        }
+
+        .service_reply {
+          margin-top: 30px;
+
+          .left {
+            width: 50px;
+
+            img {
+              width: 32px;
+              height: 32px;
+              border-radius: 50%;
+            }
+          }
+
+          .main {
+            font-size: 12px;
+
+            .name {
+              color: red;
+            }
+
+            .text {
+              color: #717171;
+              margin: 10px 0;
+            }
+
+            .praises {
+              color: #717171;
+              i {
+                color: #ccc8c8;
+              }
+            }
+          }
+        }
       }
     }
   }

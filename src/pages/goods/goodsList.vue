@@ -155,8 +155,8 @@
 
 <script>
 import xmfFixedBottom from '../../components/fixedBottom/fixedBottom'
-import xmfHeader from '../../components/home/header'
-import xmfFooter from '../../components/home/footer'
+import xmfHeader from '../../components/header/header'
+import xmfFooter from '../../components/footer/footer'
 import xmfBreadCrumb from '../../components/breadcrumb/breadcrumb'
 import xmfGoodsItem from '../../components/goods/goods'
 
