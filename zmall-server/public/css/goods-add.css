@@ -1,0 +1,122 @@
+html, body, #goods-add {
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+    background-color: #d1d2d5;
+}
+
+#goods-add .navbar {
+    position: fixed;
+    z-index: 500;
+    width: 100%;
+    border-radius: 0;
+    height: 80px;
+    margin-bottom: 0;
+}
+
+#goods-add .navbar .navbar-header .logo {
+    padding-top: 0;
+}
+
+#goods-add .navbar .user{
+    line-height: 80px;
+    padding-right: 50px;
+}
+
+#goods-add .navbar .user-avatar{
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+}
+
+#goods-add .navbar .username {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+#goods-add #content {
+    margin-top: 80px;
+    padding: 10px 20px;
+    background-color: whitesmoke;
+    height: calc(100% - 80px);
+}
+
+#goods-add .title {
+    border-bottom: 1px solid #d3d3d3;
+    color: #8fbdde;
+}
+
+#goods-add .title h4 {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 2px;
+}
+
+#goods-add .body {
+    margin-top: 30px;
+}
+
+#goods-add .body form {
+    margin-left: 50px;
+    margin-right: 50px;
+}
+
+#good-image {
+    cursor: pointer;
+    width: auto;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    outline: none !important;
+}
+
+#goods-add .submit {
+    padding: 5px 15px;
+    letter-spacing: 5px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+#goods-add .classification1 .form-control,
+#goods-add .classification2 .form-control {
+    width: auto;
+    min-width: 120px;
+}
+
+#unLogin,
+#unLogin .content,
+#unLogin .button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#unLogin {
+    width: 100%;
+    height: 100%;
+    background-color: #999;
+}
+
+#unLogin .login-tips{
+    width: 300px;
+    border-radius: 5px;
+    border: 1px solid #b2b2b2;
+    background-color: #f9f9f9;
+}
+
+#unLogin h5 {
+    text-align: center;
+    font-weight: 600;
+    padding: 10px 20px 0 10px;
+    margin: 0 10px;
+    margin-bottom: 0;
+}
+
+#unLogin .content {
+    height: 60px;
+    border-bottom: 1px solid #b2b2b2;
+}
+
+#unLogin .button a{
+    margin: 3px 20px;
+}

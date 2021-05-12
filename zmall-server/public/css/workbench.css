@@ -1,0 +1,190 @@
+#workbench .top {
+    padding-top: 20px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    width: 100%;
+    height: 130px;
+}
+
+#workbench .top > div {
+    width: 24%;
+    border-radius: 3px;
+}
+
+#workbench .top > div .one {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 15px;
+    font-size: 40px;
+    color: white;
+}
+
+#workbench .top > div .one .icon {
+    font-size: 40px;
+}
+
+#workbench .top > div .two {
+    display: flex;
+    justify-content: flex-end;
+    padding: 5px 15px;
+    font-size: 16px;
+    color: white;
+}
+
+#today-sales-volume {
+    background-color: #009e5c;
+}
+
+#today-number-of-orders {
+    background-color: #e3a302;
+}
+
+#number-of-goods-sold {
+    background-color: #017adf;
+}
+
+#total-membership {
+    background-color: #a65fbb;
+}
+
+#workbench .body {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    padding-top: 30px;
+}
+
+#workbench .body .left {
+    width: 49%;
+}
+
+#workbench .body .left > div {
+    background-color: white;
+}
+
+#workbench .body .left > div .title {
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+#workbench .body .left > div .content {
+    padding: 10px 50px 30px 50px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+}
+
+#workbench .body .left > div .content > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 16px;
+}
+
+#workbench .body .left .pending .content > div i {
+    font-size: 35px;
+    color: grey;
+}
+
+#workbench .body .left .pending .content > div span:nth-child(2) {
+    color: grey;
+}
+
+#workbench .body .left .pending .content > div span:nth-child(3) {
+    font-weight: 600;
+    padding-top: 5px;
+}
+
+#workbench .body .left .common-menu {
+    margin-top: 30px;
+}
+
+#workbench .body .left .common-menu .content > div > div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 75px;
+    height: 75px;
+    border-radius: 2px;
+}
+
+#workbench .body .left .common-menu .content i {
+    color: white;
+    font-size: 35px;
+}
+
+#workbench .body .left .common-menu .content span {
+    margin-top: 10px;
+    color: rgb(60, 60, 60);
+    font-size: 16px;
+}
+
+#workbench .body .left .common-menu .content .product-release > div{
+    background-color: #e8a340;
+}
+
+#workbench .body .left .common-menu .content .carousel-map > div{
+    background-color: #009c5d;
+}
+
+#workbench .body .left .common-menu .content .coupon > div{
+    background-color:#29ac7d;
+}
+
+#workbench .body .left .common-menu .content .online-service > div{
+    background-color: #e085a7;
+}
+
+#workbench .body .left .common-menu .content .text-publishing > div{
+    background-color: #609acc;
+}
+
+#workbench .body .right {
+    background-color: white;
+    width: 49%;
+}
+
+#workbench .body .right .hot-goods > div:nth-child(1) {
+    display: flex;
+    padding: 10px 20px;
+    justify-content: space-between;
+}
+
+#workbench .body .right .hot-goods > div .title span {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+#workbench .btn-group-xs>.btn {
+    padding: 2px 12px;
+    font-size: 12px;
+    line-height: 1.5;
+    border-radius: 2px;
+}
+
+#workbench .body .right .hot-goods .table-head,
+#workbench .body .right .hot-goods .table-body {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 40px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+#workbench .body .right .hot-goods .table-head {
+    background-color:#e7e6e6;
+    color: gray;
+}
+
+#workbench .body .right .hot-goods .table-body .nodata {
+    width: 100%;
+    text-align: center;
+    padding-top: 20px;
+}
+
+

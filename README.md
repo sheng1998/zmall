@@ -2,20 +2,44 @@
 
 > A Vue.js project
 
-## Build Setup
+## 启动项目：
 
-``` bash
-# install dependencies
-npm install
+1、 启动后台数据库
 
-# serve with hot reload at localhost:8080
-npm run dev
+```shell
+# 进入后台文件夹
+cd zmall-server
 
-# build for production with minification
-npm run build
-
-# build for production and view the bundle analyzer report
-npm run build --report
+# 启动数据库
+npm run startdb
 ```
 
-For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+2、 启动后台
+
+```shell
+# 在zmall-server 目录下
+npm start
+```
+
+3、 启动商城
+
+```shell
+# 进入 zmall 目录
+cd zmall
+
+# 启动
+npm start
+```
+
+4、 启动后台管理系统
+
+```shell
+# 进入 zmall-management-system 目录
+cd zmall-management-system
+
+# 启动
+npm start
+```
+
+
+

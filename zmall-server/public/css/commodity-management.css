@@ -1,0 +1,191 @@
+#commodity-management {
+    background-color: cyan;
+    width: 100%;
+    height: 100%;
+    margin-top: 20px;
+    border-radius: 10px;
+    background-color: white;
+}
+
+#commodity-management .title {
+    padding: 15px 30px;
+    font-size: 15px;
+    font-weight: 600;
+    background-color: #e3e5e7;
+    color: rgb(76, 76, 76);
+    border-radius: 10px 10px 0 0;
+}
+
+#commodity-management .content {
+    display: flex;
+    height: calc(100% - 70px);
+}
+
+#commodity-management .goods-nav {
+    margin-top: 8px;
+    width: 220px;
+    height: 100%;
+    font-size: 16px;
+    border-right: 1px solid #d7d8da;
+    color: rgb(87, 87, 87);
+    /* 无法选择 */
+    user-select: none; 
+    overflow-y: scroll;
+}
+
+#commodity-management .goods-nav::-webkit-scrollbar {
+    width: 0;
+}
+
+#commodity-management .goods-nav ul {
+    padding-left: 25px;
+}
+
+#commodity-management .goods-nav a {
+    text-decoration: none;
+    color: rgb(87, 87, 87);
+}
+
+.icon {
+    display: inline-block;
+    border: 5px solid transparent;
+    margin-bottom: 2px;
+    margin-right: -5px;
+    border-left-color: grey;
+}
+
+.xiangxia {
+    margin: 0;
+    border-left-color: transparent;
+    border-top-color: grey;
+}
+
+#commodity-management .goods-nav li > div {
+    display: inline-block;
+    cursor: pointer;
+}
+
+#commodity-management .all-classification-item li {
+    margin-top: 5px;
+}
+
+#commodity-management .goods-nav .hide {
+    display: none;
+}
+
+#commodity-management .goods-nav .spot {
+    display: inline-block;
+    font-size: 12px;
+}
+
+#commodity-management .goods {
+    width: 100%;
+    height: 100%;
+}
+
+#commodity-management .goods > div:nth-child(1) {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 30px;
+}
+
+#commodity-management .goods .my-btn > .btn {
+    padding: 5px 15px;
+}
+
+#commodity-management .goods .my-input-group,
+#commodity-management .goods .table-head,
+#commodity-management .goods .table-body > div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#commodity-management .goods .table-head {
+    padding: 10px 30px;
+    background-color:#e7e6e6;
+    color: gray;
+    border-top: 1px solid #d7d8da;
+    border-bottom: 1px solid #d7d8da;
+}
+
+#commodity-management .goods .table-head > input,
+#commodity-management .goods .table-body > div > input {
+    flex: 1;
+    text-align: center;
+}
+
+#commodity-management .goods .table-head > span,
+#commodity-management .goods .table-body > div > div {
+    flex: 2;
+    text-align: center;
+}
+
+#commodity-management .goods .table-body {
+    padding: 10px 30px;
+    overflow-y: scroll;
+    height: calc(100% - 110px);
+}
+
+#commodity-management .goods .table-body::-webkit-scrollbar {
+    width: 0;
+}
+
+#commodity-management .goods .table-body > div {
+    height: 100px;
+}
+
+#commodity-management .goods .table-body img {
+    border-radius: 3px;
+    width: 80px;
+    height: 80px;
+}
+
+#commodity-management .goods .table-body i {
+    font-size: 20px;
+    color: white;
+}
+
+#commodity-management .goods .table-body .operation {
+    display: flex;
+    justify-content: center;
+}
+
+#commodity-management .goods .table-body .operation > div:nth-child(1) {
+    width: 30px;
+    height: 30px;
+    border-radius: 3px;
+    background-color: #009f62;
+    margin-right: 2px;
+}
+
+#commodity-management .goods .table-body .operation > div:nth-child(2) {
+    width: 30px;
+    height: 30px;
+    border-radius: 3px;
+    background-color: #e87733;
+    margin-left: 2px;
+}
+
+#fadatupian {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    margin: auto;
+    width: 500px;
+    height: 500px;
+    z-index: 1000;
+    border-radius: 3px;
+}
+
+#zhezhaoceng {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(233, 233, 233, 0.6);
+}

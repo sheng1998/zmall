@@ -1,0 +1,23 @@
+{
+  "name": "zmall-server",
+  "version": "1.0.0",
+  "description": "商品后台管理系统后台",
+  "author": "sheng <18475140601@163.com>",
+  "private": true,
+  "scripts": {
+    "dev": "node ./app.js",
+    "start": "npm run dev",
+    "startdb": "mongod --dbpath=./db/data --port=27018"
+  },
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "mongoose": "^5.11.11",
+    "multer": "^1.4.2",
+    "node-uuid": "^1.4.8"
+  },
+  "engines": {
+    "node": ">= 6.0.0",
+    "npm": ">= 3.0.0"
+  }
+}
