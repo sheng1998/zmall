@@ -9,6 +9,16 @@ let carouselSchema = new Schema({
         type: String,
         required: true
     },
+    // 轮播图绑定的商品
+    with_goods: {
+        type: Number,
+        required: true
+    },
+    // 轮播图绑定的商品名称
+    goods_name: {
+        type: String,
+        required: true
+    },
     // 是否已经删除
     is_delete: {
         type: Number,

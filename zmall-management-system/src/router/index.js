@@ -5,6 +5,7 @@ import Logo from '@/page/manageLogo'
 import Carousel from '@/page/manageCarousel'
 import Nav from '@/page/manageNav'
 import GoodsList from '@/page/goodslist'
+import OffSaleGoodsList from '@/page/offsaleGoodsList'
 import AddGoods from '@/page/addGoods'
 import EditGoods from '@/page/editGoods'
 import Attribute from '@/page/attribute'
@@ -41,6 +42,11 @@ export default new Router({
           path: '/goods/manage/list',
           name: 'goodslist',
           component: GoodsList
+        },
+        {
+          path: '/goods/manage/list/offsale',
+          name: 'offsalegoodslist',
+          component: OffSaleGoodsList
         },
         {
           path: '/goods/manage/classification',

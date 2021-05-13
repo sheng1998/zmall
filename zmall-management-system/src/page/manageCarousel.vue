@@ -14,6 +14,10 @@
           <template slot-scope="scope">
             <div>
               <el-image fit="cover" :src="scope.row.carousel_url"></el-image>
+              <div class="with-goods">
+                <span>绑定商品：</span>
+                {{ scope.row.goods_name }}
+              </div>
             </div>
           </template>
         </el-table-column>
@@ -132,7 +136,7 @@
                     type="success"
                     icon="el-icon-upload"
                     circle
-                    @click="uploadsCarousel(scope.row)"
+                    @click="showDia(scope.row)"
                   ></el-button>
                 </el-tooltip>
               </el-row>
@@ -141,6 +145,23 @@
         </el-table-column>
       </el-table>
     </div>
+
+    <!-- 上传轮播图绑定商品 id 的对话框 -->
+    <el-dialog
+      title="绑定商品"
+      :visible.sync="dialogFormVisible"
+      @closed="closedDia"
+    >
+      <el-form :model="form">
+        <el-form-item label="绑定商品id" label-width="120px">
+          <el-input v-model="form.goods_id" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="uploadsCarousel">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -149,16 +170,26 @@ export default {
   data () {
     return {
       carouselList: [],
-      notUploadsImgList: []
+      notUploadsImgList: [],
+      form: {
+        goods_id: '',
+        carousel: {}
+      },
+      dialogFormVisible: false
     }
   },
+
   created () {
     this.getCarouselList()
-    this.notUploadsImgList = JSON.parse(
-      this.$mycookie.getCookie('notUploadsImgList')
-    )
+    if (this.$mycookie.getCookie('notUploadsImgList')) {
+      this.notUploadsImgList = JSON.parse(
+        this.$mycookie.getCookie('notUploadsImgList')
+      )
+    }
   },
+
   mounted () {},
+
   methods: {
     // 获取轮播图数据
     getCarouselList () {
@@ -185,6 +216,9 @@ export default {
 
     // 删除轮播图
     deleteCarousel (carousel) {
+      if (this.carouselList.length <= 2) {
+        return this.$message.warning('删除失败，至少保留两张图片作为轮播图！')
+      }
       this.$confirm('是否删除该轮播图?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -253,13 +287,13 @@ export default {
     },
 
     // 上传轮播图
-    uploadsCarousel (carousel) {
-      this.$axios.post('/uploads/carousel', carousel).then(res => {
+    uploadsCarousel () {
+      this.$axios.post('/uploads/carousel', this.form).then(res => {
         let status = res.data.meta.status
         if (status === 200) {
           this.$message.success('上传成功！')
           let temArr = this.notUploadsImgList.filter(item => {
-            return item.url !== carousel.url
+            return item.url !== this.form.carousel.url
           })
           this.notUploadsImgList = temArr
           this.$mycookie.setCookie(
@@ -268,10 +302,26 @@ export default {
             60 * 60
           )
           this.getCarouselList()
+          this.dialogFormVisible = false
         } else {
-          this.$message.error('上传失败！')
+          this.$message.error(res.data.meta.msg)
         }
       })
+    },
+
+    // 显示绑定商品 id 对话框
+    showDia (carousel) {
+      if (this.carouselList.length >= 10) {
+        return this.$message.warning('上传失败，最多允许有10张图片作为轮播图！')
+      }
+      this.dialogFormVisible = true
+      this.form.carousel = carousel
+    },
+
+    // 关闭对话框触发
+    closedDia () {
+      this.form.goods_id = ''
+      this.form.carousel = {}
     }
   }
 }
@@ -288,6 +338,16 @@ export default {
       font-size: 18px;
       font-weight: 700;
       color: tomato;
+    }
+
+    .with-goods {
+      border-top: 1px solid #ebeef5;
+      padding-top: 10px;
+      box-sizing: border-box;
+      text-align: left;
+      span {
+        font-size: 16px;
+      }
     }
   }
 

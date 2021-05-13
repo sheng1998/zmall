@@ -3,8 +3,6 @@
     <el-menu
       default-active="/home/manage/logo"
       class="el-menu-vertical-demo"
-      @open="handleOpen"
-      @close="handleClose"
       background-color="#545c64"
       text-color="#fff"
       active-text-color="#ffd04b"
@@ -41,10 +39,22 @@
           <i class="el-icon-menu"></i>
           <span>商品管理</span>
         </template>
-        <!-- 商品列表 -->
+        <!-- 添加商品 -->
+        <el-menu-item index="/goods/manage/addgoods">
+          <i class="el-icon-s-tools"></i>
+          <span>添加商品</span>
+        </el-menu-item>
+
+        <!-- 上架商品列表 -->
         <el-menu-item index="/goods/manage/list">
           <i class="el-icon-s-tools"></i>
           <span>商品列表</span>
+        </el-menu-item>
+
+        <!-- 下架商品列表 -->
+        <el-menu-item index="/goods/manage/list/offsale">
+          <i class="el-icon-s-tools"></i>
+          <span>商品列表(已下架)</span>
         </el-menu-item>
 
         <!-- 商品分类管理 -->
@@ -88,23 +98,22 @@ export default {
   },
   created () {},
   mounted () {},
-  methods: {
-    handleOpen (key, keyPath) {
-      console.log(key, keyPath)
-    },
-    handleClose (key, keyPath) {
-      console.log(key, keyPath)
-    }
-  }
+  methods: {}
 }
 </script>
 
 <style lang="less">
 .left-nav {
   height: 100%;
+  overflow-y: auto;
+  width: 210px;
 
   .el-menu {
     height: 100%;
+  }
+
+  &::-webkit-scrollbar {
+    width: 0;
   }
 }
 </style>

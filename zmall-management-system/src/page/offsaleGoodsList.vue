@@ -1,11 +1,8 @@
 <template>
-  <div class="manage-goods-list">
-    <div class="xmf-system-flex fzzj">在售商品列表</div>
+  <div class="manage-goods-list-offsale">
+    <div class="xmf-system-flex fzzj">已下架商品列表</div>
     <!-- 商品列表 -->
     <el-card class="goods-list-table">
-      <el-row class="addgoods-btn">
-        <el-button type="primary" @click="toAddGoods">添加商品</el-button>
-      </el-row>
       <el-table :data="goodsList" stripe style="width: 100%" border>
         <!-- 商品id -->
         <el-table-column
@@ -99,7 +96,7 @@
     </el-card>
 
     <!-- 分页 -->
-    <div class="fenye">
+    <div class="fenye" v-if="pagingForm.totalDate > 1">
       <el-pagination
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
@@ -121,8 +118,8 @@ export default {
       // 分页相关数据
       pagingForm: {
         currentPage: 1, // 当前页码
-        dataNumberArr: [2, 4, 6, 8, 10, 15, 20, 30, 50, 100, 200, 500], // 每页可选显示数据条数数组
-        dataNumber: 2, // 每页显示数据条数
+        dataNumberArr: [1, 2, 4, 6, 8, 10, 15, 20, 30, 50, 100, 200, 500], // 每页可选显示数据条数数组
+        dataNumber: 1, // 每页显示数据条数
         totalDate: 0 // 数据总数
       },
       goodsList: []
@@ -130,16 +127,16 @@ export default {
   },
 
   created () {
-    this.getOnsaleGoodsList()
+    this.getOffSaleGoodsList()
   },
 
   mounted () {},
 
   methods: {
     // 获取商品列表
-    getOnsaleGoodsList () {
+    getOffSaleGoodsList () {
       this.$axios
-        .get('/goods/onsale', {
+        .get('/goods/offsale', {
           params: {
             page_size: this.pagingForm.currentPage,
             data_number: this.pagingForm.dataNumber
@@ -151,7 +148,7 @@ export default {
           let data = res.data.data
           if (status === 200) {
             data.goods_list.forEach(item => {
-              item.onsale = true
+              item.onsale = false
             })
             this.pagingForm.totalDate = data.totalGoods
             this.goodsList = data.goods_list
@@ -161,28 +158,21 @@ export default {
         })
     },
 
-    // 跳转到添加商品页面
-    toAddGoods () {
-      console.log('goods')
-      // 跳转到商品添加页面
-      this.$router.push({ name: 'addgoods' })
-    },
-
     // 编辑商品上架状态
     changeState (goods) {
-      goods.onsale = true
-      this.$confirm('是否要下架该商品?', '提示', {
+      goods.onsale = false
+      this.$confirm('是否要上架该商品?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       })
         .then(() => {
-          goods.onsale = false
+          goods.onsale = true
           this.$axios
             .get('/alter/goods/state', {
               params: {
                 goods_id: goods.goods_id,
-                state: false
+                state: true
               }
             })
             .then(res => {
@@ -191,9 +181,9 @@ export default {
               } = res.data
               if (status === 200) {
                 this.$message.success('下架商品成功！')
-                this.getOnsaleGoodsList()
+                this.getOffSaleGoodsList()
               } else {
-                goods.onsale = true
+                goods.onsale = false
                 this.$message.error(msg)
               }
             })
@@ -227,7 +217,7 @@ export default {
             } = res.data
             if (status === 200) {
               this.$message.success('删除商品成功！')
-              this.getOnsaleGoodsList()
+              this.getOffSaleGoodsList()
             } else {
               this.$message.error(msg)
             }
@@ -244,25 +234,21 @@ export default {
     // 每页显示条数改变
     handleSizeChange (val) {
       this.pagingForm.dataNumber = val
-      this.getOnsaleGoodsList()
+      this.getOffSaleGoodsList()
     },
 
     // 当前页改变
     handleCurrentChange (val) {
       this.pagingForm.currentPage = val
-      this.getOnsaleGoodsList()
+      this.getOffSaleGoodsList()
     }
   }
 }
 </script>
 
 <style lang="less">
-.manage-goods-list {
+.manage-goods-list-offsale {
   .goods-list-table {
-    .addgoods-btn {
-      margin-bottom: 20px;
-    }
-
     .onsale-goods-imglist {
       .el-carousel__button {
         display: none;

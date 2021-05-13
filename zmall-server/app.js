@@ -7,6 +7,12 @@ let bodyParser = require('body-parser')
 
 // 引入路由模块
 let router = require('./routes/index') 
+let attributeRouter = require('./routes/attribute')
+let carouselRouter = require('./routes/carousel')
+let classificationRouter = require('./routes/classification')
+let goodsRouter = require('./routes/goods')
+let logoLouter = require('./routes/logo')
+let uploadsRouter = require('./routes/uploads')
 
 // 创建 express 的实例
 let app = express()
@@ -17,11 +23,19 @@ app.use('/uploads/', express.static(path.join(__dirname, './uploads/')))
 app.use('/tmp_uploads/', express.static(path.join(__dirname, './tmp_uploads/')))
 
 // 配置 body-parser 中间件，专门处理解析表单 post 请求体
-app.use(bodyParser.urlencoded({extended: false}))
+app.use(bodyParser.urlencoded({
+    extended: false
+}))
 app.use(bodyParser.json())
 
 // 把路由模块挂载到 app 服务中
 app.use(router)
+app.use(attributeRouter)
+app.use(carouselRouter)
+app.use(classificationRouter)
+app.use(goodsRouter)
+app.use(logoLouter)
+app.use(uploadsRouter)
 
 // 监听服务器端口
 app.listen(3002, () => {

@@ -451,7 +451,7 @@
 
       <!-- 保存按钮 -->
       <div class="goodsinfo-submit-btn xmf-system-flex">
-        <el-button type="success" @click="temporarySave"
+        <el-button type="success" @click="temporarySaveDataToLocalStorage"
           >临时保存商品数据</el-button
         >
         <el-button type="success" @click="saveGoods">提交商品数据</el-button>
@@ -525,14 +525,14 @@ export default {
     return {
       // 商品数据表单
       form: {
-        goods_name: '商品名称',
-        describe: '商品描述',
-        price: 1,
+        goods_name: '',
+        describe: '',
+        price: '',
         original_price: '',
         discount_price: '',
-        classification: '手机',
+        classification: '',
         img_list: [],
-        goods_number: 0,
+        goods_number: '',
         details: '',
         attribute: [],
         parameter: {}
@@ -558,13 +558,7 @@ export default {
       classList: [], // 分类列表的数据
       attributeList: [], // 属性列表的数据
       checkedAttributeValueList: [],
-      fileList: [
-        {
-          name: '4e2c6b50b33311eba001d58514d9ecc5.jpg',
-          url:
-            'http://127.0.0.1:3002/tmp_uploads/4e2c6b50b33311eba001d58514d9ecc5.jpg'
-        }
-      ],
+      fileList: [],
       dialogImageUrl: '',
       dialogVisible: false,
       bodyParameterList: [],
@@ -578,17 +572,45 @@ export default {
         remarks: '',
         current: '',
         currentAlterParameterName: ''
-      }
+      },
+      isSubmit: false
     }
   },
+
+  // 用到的子组件
   components: {
     quillEditor
   },
+
+  // 生命周期钩子 created
   created () {
+    this.getLocalStorage()
     this.getClassification()
   },
-  mounted () {},
+
+  // 生命周期钩子 mounted
+  mounted () {
+    // 为页面绑定刷新和关闭事件
+    window.addEventListener('beforeunload', e => this.beforeunloadHandler(e))
+  },
+
+  // 生命周期钩子 destroyed
+  destroyed () {
+    // 为页面绑定刷新和关闭事件
+    window.removeEventListener('beforeunload', e => this.beforeunloadHandler(e))
+    window.onbeforeunload = null
+  },
+
+  // 组件中用到的方法
   methods: {
+    // 启动关闭和刷新提示
+    beforeunloadHandler (e) {
+      if (this.$route.name === 'addgoods') {
+        e.returnValue = '关闭提示'
+      } else {
+        window.onbeforeunload = null
+      }
+    },
     // 获取分类列表
     getClassification () {
       this.$axios.get('/get/classification').then(res => {
@@ -596,6 +618,55 @@ export default {
           this.classList = res.data.data.class_list
         }
       })
+    },
+
+    // 获取 localStorage 的值赋值给组件数据
+    getLocalStorage () {
+      if (window.localStorage.getItem('addGoodsData-form')) {
+        this.form = JSON.parse(window.localStorage.getItem('addGoodsData-form'))
+      }
+      if (
+        window.localStorage.getItem('addGoodsData-checkedAttributeValueList')
+      ) {
+        this.checkedAttributeValueList = JSON.parse(
+          window.localStorage.getItem('addGoodsData-checkedAttributeValueList')
+        )
+      }
+      if (window.localStorage.getItem('addGoodsData-classList')) {
+        this.classList = JSON.parse(
+          window.localStorage.getItem('addGoodsData-classList')
+        )
+      }
+      if (window.localStorage.getItem('addGoodsData-attributeList')) {
+        this.attributeList = JSON.parse(
+          window.localStorage.getItem('addGoodsData-attributeList')
+        )
+      }
+      if (window.localStorage.getItem('addGoodsData-fileList')) {
+        this.fileList = JSON.parse(
+          window.localStorage.getItem('addGoodsData-fileList')
+        )
+      }
+      if (window.localStorage.getItem('addGoodsData-bodyParameterList')) {
+        this.bodyParameterList = JSON.parse(
+          window.localStorage.getItem('addGoodsData-bodyParameterList')
+        )
+      }
+      if (window.localStorage.getItem('addGoodsData-mainParameterList')) {
+        this.mainParameterList = JSON.parse(
+          window.localStorage.getItem('addGoodsData-mainParameterList')
+        )
+      }
+      if (
+        window.localStorage.getItem('addGoodsData-sizeAndWeightParameterList')
+      ) {
+        this.sizeAndWeightParameterList = JSON.parse(
+          window.localStorage.getItem('addGoodsData-sizeAndWeightParameterList')
+        )
+      }
+      if (this.form.classification) {
+        this.getattribute()
+      }
     },
 
     // 商品分类值改变时触发
@@ -789,9 +860,54 @@ export default {
         })
     },
 
-    // 临时保存商品数据到 cookie 中
-    temporarySave () {
-      console.log('temporarySave')
+    // 临时保存商品数据到 localStorage 中
+    temporarySaveDataToLocalStorage () {
+      window.localStorage.setItem(
+        'addGoodsData-form',
+        JSON.stringify(this.form)
+      )
+      window.localStorage.setItem(
+        'addGoodsData-checkedAttributeValueList',
+        JSON.stringify(this.checkedAttributeValueList)
+      )
+      window.localStorage.setItem(
+        'addGoodsData-classList',
+        JSON.stringify(this.classList)
+      )
+      window.localStorage.setItem(
+        'addGoodsData-attributeList',
+        JSON.stringify(this.attributeList)
+      )
+      window.localStorage.setItem(
+        'addGoodsData-fileList',
+        JSON.stringify(this.fileList)
+      )
+      window.localStorage.setItem(
+        'addGoodsData-bodyParameterList',
+        JSON.stringify(this.bodyParameterList)
+      )
+      window.localStorage.setItem(
+        'addGoodsData-mainParameterList',
+        JSON.stringify(this.mainParameterList)
+      )
+      window.localStorage.setItem(
+        'addGoodsData-sizeAndWeightParameterList',
+        JSON.stringify(this.sizeAndWeightParameterList)
+      )
+      this.$message.success('保存成功！')
+      this.isSubmit = true
+    },
+
+    // 清除保存到 localStorage 的商品数据
+    clearDataInLocalStorage () {
+      window.localStorage.removeItem('addGoodsData-form')
+      window.localStorage.removeItem('addGoodsData-checkedAttributeValueList')
+      window.localStorage.removeItem('addGoodsData-classList')
+      window.localStorage.removeItem('addGoodsData-attributeList')
+      window.localStorage.removeItem('addGoodsData-fileList')
+      window.localStorage.removeItem('addGoodsData-bodyParameterList')
+      window.localStorage.removeItem('addGoodsData-mainParameterList')
+      window.localStorage.removeItem('addGoodsData-sizeAndWeightParameterList')
     },
 
     // 提交商品到后台数据库保存
@@ -869,12 +985,46 @@ export default {
           this.form.parameter.size_and_weight = this.sizeAndWeightParameterList
 
           // 发送保存请求
-          console.log(this.form)
           this.$axios.post('/add/goods', this.form).then(res => {
-            console.log(res)
+            if (res.data.meta.status === 200) {
+              this.$message.success('添加商品成功！')
+              this.clearDataInLocalStorage()
+              this.isSubmit = true
+              this.$router.push({ name: 'goodslist' })
+            } else {
+              this.$message.error(res.data.meta.msg)
+            }
           })
         }
       }
+    }
+  },
+
+  // 导航离开该组件的对应路由时调用
+  beforeRouteLeave (to, from, next) {
+    // 导航离开该组件的对应路由时调用
+    if (to.name !== 'addgoods' && !this.isSubmit) {
+      this.$confirm('跳转到其他页面会清空当前表单数据, 是否继续跳转?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          // 移除页面绑定的刷新和关闭事件
+          window.removeEventListener('beforeunload', e =>
+            this.beforeunloadHandler(e)
+          )
+          window.onbeforeunload = null
+          next()
+        })
+        .catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消跳转'
+          })
+        })
+    } else {
+      next()
     }
   }
 }
