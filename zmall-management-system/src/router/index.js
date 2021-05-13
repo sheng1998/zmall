@@ -1,14 +1,14 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Home from '@/page/home'
-import Logo from '@/page/manageLogo'
-import Carousel from '@/page/manageCarousel'
-import Nav from '@/page/manageNav'
-import GoodsList from '@/page/goodslist'
-import OffSaleGoodsList from '@/page/offsaleGoodsList'
-import AddGoods from '@/page/addGoods'
-import EditGoods from '@/page/editGoods'
-import Attribute from '@/page/attribute'
+import Logo from '@/page/home/manageLogo'
+import Carousel from '@/page/home/manageCarousel'
+import Nav from '@/page/home/manageNav'
+import GoodsList from '@/page/goods/goodslist'
+import OffSaleGoodsList from '@/page/goods/offsaleGoodsList'
+import AddGoods from '@/page/goods/addGoods'
+import EditGoods from '@/page/goods/editGoods'
+import Attribute from '@/page/goods/attribute'
 
 Vue.use(Router)
 

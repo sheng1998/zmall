@@ -29,7 +29,7 @@ router.post('/save/logo', (req, res) => {
     let newPath = `./uploads/${path.split('\\')[1]}`
     copyFile(path, newPath, () => {
         new Logo({
-            logo_url: `http://127.0.0.1:3002/uploads/${path.split('\\')[1]}`
+            logo_url: `http://127.0.0.1:3002/uploads/logo/${path.split('\\')[1]}`
         }).save().then(() => {
             res.json({
                 data: {},
