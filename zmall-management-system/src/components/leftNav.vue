@@ -19,7 +19,7 @@
         <!-- 商场logo管理 -->
         <el-menu-item index="/home/manage/logo">
           <i class="el-icon-s-tools"></i>
-          <span>商场logo管理</span>
+          <span>商城logo管理</span>
         </el-menu-item>
 
         <!-- 首页轮播图管理 -->
@@ -47,41 +47,35 @@
           <span>商品列表</span>
         </el-menu-item>
 
-        <!-- 首页轮播图管理 -->
-        <el-menu-item index="carousel">
+        <!-- 商品分类管理 -->
+        <el-menu-item index="/goods/manage/classification">
           <i class="el-icon-s-tools"></i>
-          <span>轮播图管理</span>
+          <span>商品分类管理</span>
         </el-menu-item>
 
-        <!-- 首页导航栏管理 -->
-        <el-menu-item index="nav">
+        <!-- 商品属性管理 -->
+        <el-menu-item index="/goods/manage/attribute">
           <i class="el-icon-s-tools"></i>
-          <span>导航栏管理</span>
+          <span>商品属性管理</span>
+        </el-menu-item>
+
+        <!-- 商品评论管理 -->
+        <el-menu-item index="/goods/manage/comment">
+          <i class="el-icon-s-tools"></i>
+          <span>商品评论管理</span>
         </el-menu-item>
       </el-submenu>
 
-      <el-submenu index="2">
-        <template slot="title">
-          <i class="el-icon-menu"></i>
-          <span>首页管理</span>
-        </template>
-
-        <!-- 首页导航栏管理 -->
-        <el-submenu index="2-4">
-          <template slot="title">
-            <i class="el-icon-menu"></i>
-            <span>轮播图管理</span>
-          </template>
-          <el-menu-item index="2-4-1">
-            <i class="el-icon-s-tools"></i>
-            选项1
-          </el-menu-item>
-        </el-submenu>
-      </el-submenu>
-
-      <el-menu-item index="4">
+      <!-- 用户管理 -->
+      <el-menu-item index="/manage/user">
         <i class="el-icon-setting"></i>
-        <span slot="title">导航四</span>
+        <span slot="title">用户管理</span>
+      </el-menu-item>
+
+      <!-- 数据统计 -->
+      <el-menu-item index="/manage/statistics">
+        <i class="el-icon-setting"></i>
+        <span slot="title">数据统计</span>
       </el-menu-item>
     </el-menu>
   </div>

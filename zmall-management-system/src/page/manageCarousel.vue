@@ -1,5 +1,6 @@
 <template>
   <div class="manage-carousel">
+    <div class="xmf-system-flex fzzj">商城首页轮播图管理</div>
     <!-- 轮播图表格--已上传 -->
     <div class="carousel-table already-uploads-table">
       <div class="already-uploads">已经上传的轮播图</div>
@@ -27,7 +28,7 @@
                   class="item"
                   effect="light"
                   content="置顶该轮播图，设置该图片为首页显示的第一张轮播图。"
-                  placement="left-start"
+                  placement="top-end"
                 >
                   <el-button
                     size="mini"
@@ -44,7 +45,7 @@
                   class="item"
                   effect="light"
                   content="删除该轮播图"
-                  placement="left-start"
+                  placement="top-end"
                 >
                   <el-button
                     size="mini"
@@ -106,7 +107,7 @@
                   class="item"
                   effect="light"
                   content="删除该轮播图"
-                  placement="left-start"
+                  placement="top-end"
                 >
                   <el-button
                     size="mini"
@@ -117,12 +118,13 @@
                     @click="deleteNotUploadsCarousel(scope.row)"
                   ></el-button>
                 </el-tooltip>
+
                 <!-- 上传轮播图 -->
                 <el-tooltip
                   class="item"
                   effect="light"
                   content="上传该轮播图"
-                  placement="left-start"
+                  placement="top-end"
                 >
                   <el-button
                     size="mini"

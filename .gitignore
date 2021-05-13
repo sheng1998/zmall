@@ -6,6 +6,9 @@ yarn-debug.log*
 yarn-error.log*
 /.history/
 /.VSCodeCounter/
+uploads/
+tmp_uploads/
+db/
 
 # Editor directories and files
 .idea

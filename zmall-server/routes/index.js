@@ -17,6 +17,8 @@ mongoose.connect('mongodb://127.0.0.1:27018/zmall')
 let Logo = require('../models/logo')
 let Carousel = require('../models/carousel')
 let Classification = require('../models/classification.js')
+let Attribute = require('../models/attribute.js')
+let Goods = require('../models/goods.js')
 
 // 创建路由容器
 let router = express.Router()
@@ -214,9 +216,83 @@ router.post('/delete/carousel', (req, res) => {
     })
 })
 
+// 获取在售商品列表
+router.get('/goods/onsale', (req, res) => {
+    Goods.find({
+            is_delete: 0,
+            is_sale: 1
+        }).sort({
+            last_modify_time: -1
+        })
+        .exec().then(data => {
+            console.log(data)
+            res.json({
+                data: {
+                    goods_list: data
+                },
+                meta: {
+                    msg: '获取在售商品列表成功！',
+                    status: 200
+                }
+            })
+        })
+})
+
+// 获取下架商品列表
+router.get('/goods/offsale', (req, res) => {
+    Goods.find({
+            is_delete: 0,
+            is_sale: 0
+        }).sort({
+            last_modify_time: -1
+        })
+        .exec().then(data => {
+            console.log(data)
+            res.json({
+                data: {
+                    goods_list: data
+                },
+                meta: {
+                    msg: '获取下架商品列表成功！',
+                    status: 200
+                }
+            })
+        })
+})
+
+// 添加商品
+router.post('/add/goods', (req, res) => {
+    let goodsData = req.body
+    Goods.find().sort({
+            goods_id: -1
+        })
+        .exec().then(data => {
+            let goods_id = 0
+            if (data.length === 0) {
+                goods_id = 1
+            } else {
+                goods_id = data[0].goods_id + 1
+            }
+            goodsData.goods_id = goods_id
+            new Goods(goodsData).save().then(() => {
+                res.json({
+                    data: {},
+                    meta: {
+                        msg: '保存商品数据成功！',
+                        status: 200
+                    }
+                })
+            })
+        })
+})
+
 // 获取分类列表
-router.get('/get/calssification', (req, res) => {
+router.get('/get/classification', (req, res) => {
     Classification.find()
+        .sort({
+            last_modify_time: -1
+        })
+        .exec()
         .then(result => {
             res.json({
                 data: {
@@ -231,23 +307,106 @@ router.get('/get/calssification', (req, res) => {
 })
 
 // 添加分类
-router.post('/add/calssification', (req, res) => {
-    new Classification({
-        class_name: req.body.class_name,
-        class_path: req.body.class_path
-    }).save().then(
+router.post('/add/classification', (req, res) => {
+    Classification.findOne({
+        class_name: req.body.class_name
+    }).then(data => {
+        if (data) {
+            res.json({
+                data: {},
+                meta: {
+                    msg: '添加分类失败，分类名已存在！',
+                    status: 201
+                }
+            })
+        } else {
+            new Classification({
+                class_name: req.body.class_name,
+                class_path: req.body.class_path
+            }).save().then(
+                res.json({
+                    data: {},
+                    meta: {
+                        msg: '添加分类成功！',
+                        status: 200
+                    }
+                })
+            )
+        }
+    })
+})
+
+// 修改分类
+router.post('/alter/classification', (req, res) => {
+    let {
+        id,
+        class_name,
+        class_path
+    } = req.body
+
+    Classification.findOne({
+        class_name
+    }).then(data => {
+        if (data) {
+            Classification.findById(id).then(data => {
+                if (data.class_name !== class_name) {
+                    res.json({
+                        data: {},
+                        meta: {
+                            msg: '修改分类失败，分类名已存在！',
+                            status: 201
+                        }
+                    })
+                } else {
+                    Classification.findByIdAndUpdate(id, {
+                        class_name,
+                        class_path
+                    }).then(() => {
+                        res.json({
+                            data: {},
+                            meta: {
+                                msg: '修改分类成功！',
+                                status: 200
+                            }
+                        })
+                    })
+                }
+            })
+        } else {
+            Classification.findByIdAndUpdate(id, {
+                class_name,
+                class_path
+            }).then(() => {
+                res.json({
+                    data: {},
+                    meta: {
+                        msg: '修改分类成功！',
+                        status: 200
+                    }
+                })
+            })
+        }
+    })
+})
+
+// 置顶分类参数
+router.post('/top/classification', (req, res) => {
+    let id = req.body.id
+    Classification.findByIdAndUpdate(id, {
+        last_modify_time: new Date
+    }).then(() => {
         res.json({
             data: {},
             meta: {
-                msg: '添加分类成功！',
+                msg: '置顶分类参数成功！',
                 status: 200
             }
         })
-    )
+    })
 })
 
 // 删除分类
-router.post('/delete/calssification', (req, res) => {
+router.post('/delete/classification', (req, res) => {
     let id = req.body.id
     Classification.findByIdAndDelete(id).then(() => {
         res.json({
@@ -260,30 +419,216 @@ router.post('/delete/calssification', (req, res) => {
     })
 })
 
-// 修改分类
-router.post('/alter/calssification', (req, res) => {
+// 获取所有属性
+router.get('/get/attribute', (req, res) => {
+    Attribute.find()
+        .sort({
+            belong_classification: -1
+        })
+        .exec()
+        .then(data => {
+            let attribute_list = data.map(item => {
+                return {
+                    _id: item._id,
+                    attribute_name: item.attribute_name,
+                    attribute_value: item.attribute_value,
+                    children: item.attribute_value.split(','),
+                    belong_classification: item.belong_classification
+                }
+            })
+            res.json({
+                data: {
+                    attribute_list
+                },
+                meta: {
+                    msg: '获取属性成功！',
+                    status: 200
+                }
+            })
+        })
+})
+
+// 根据属性所属分类获取属性
+router.get('/get/attribute/withclass', (req, res) => {
+    Attribute.find({
+            belong_classification: req.query.belong_classification
+        })
+        .then(data => {
+            let attribute_list = data.map(item => {
+                return {
+                    id: item._id,
+                    attribute_name: item.attribute_name,
+                    attribute_value: item.attribute_value,
+                    children: item.attribute_value.split(',')
+                }
+            })
+            res.json({
+                data: {
+                    attribute_list
+                },
+                meta: {
+                    msg: '获取属性成功！',
+                    status: 200
+                }
+            })
+        })
+})
+
+// 添加属性
+router.post('/add/attribute', (req, res) => {
+    let {
+        attribute_name,
+        attribute_value,
+        class_value
+    } = req.body
+    attribute_value = [...new Set(attribute_value.split(','))].join(',')
+    Attribute.findOne({
+        attribute_name,
+        belong_classification: class_value
+    }).then(data => {
+        if (data) {
+            res.json({
+                data: {},
+                meta: {
+                    msg: '属性名重复，不允许添加该属性！',
+                    status: 201
+                }
+            })
+        } else {
+            new Attribute({
+                attribute_name,
+                attribute_value,
+                belong_classification: class_value
+            }).save().then(() => {
+                res.json({
+                    data: {},
+                    meta: {
+                        msg: '添加属性成功！',
+                        status: 200
+                    }
+                })
+            })
+        }
+    })
+})
+
+// 修改属性
+router.post('/alter/attribute', (req, res) => {
     let {
         id,
-        class_name,
-        class_path
+        attribute_name,
+        attribute_value,
+        class_value
     } = req.body
-    Classification.findByIdAndUpdate(id, {
-        class_name,
-        class_path
-    }).then(() => {
-        res.json({
-            data: {},
-            meta: {
-                msg: '修改分类成功！',
-                status: 200
-            }
+    attribute_value = [...new Set(attribute_value.split(','))].join(',')
+    Attribute.findOne({
+        attribute_name,
+        belong_classification: class_value
+    }).then(data => {
+        if (data) {
+            Attribute.findById(id).then(data => {
+                if (data.attribute_name !== attribute_name) {
+                    res.json({
+                        data: {},
+                        meta: {
+                            msg: '属性名重复，不允许修改为该属性名！',
+                            status: 201
+                        }
+                    })
+                } else {
+                    Attribute.findByIdAndUpdate(id, {
+                        attribute_name,
+                        attribute_value,
+                        belong_classification: class_value
+                    }).then(() => {
+                        res.json({
+                            data: {},
+                            meta: {
+                                msg: '修改属性成功！',
+                                status: 200
+                            }
+                        })
+                    })
+                }
+            })
+        } else {
+            Attribute.findByIdAndUpdate(id, {
+                attribute_name,
+                attribute_value,
+                belong_classification: class_value
+            }).then(() => {
+                res.json({
+                    data: {},
+                    meta: {
+                        msg: '修改属性成功！',
+                        status: 200
+                    }
+                })
+            })
+        }
+    })
+})
+
+// 添加属性值
+router.post('/add/attribute/value', (req, res) => {
+    let {
+        id,
+        value
+    } = req.body
+    Attribute.findById(id).then(data => {
+        let attribute_value = data.attribute_value.split(',')
+        attribute_value.push(value)
+        attribute_value = [...new Set(attribute_value)].join(',')
+        Attribute.findByIdAndUpdate(id, {
+            attribute_value
+        }).then(() => {
+            res.json({
+                data: {},
+                meta: {
+                    msg: '添加属性值成功！',
+                    status: 200
+                }
+            })
         })
     })
 })
 
-// 获取商品列表
-router.get('/goods/list', (req, res) => {
-    
+// 删除属性值
+router.post('/delete/attribute/value', (req, res) => {
+    let {
+        id,
+        value
+    } = req.body
+    Attribute.findById(id).then(data => {
+        let attribute_value = data.attribute_value.split(',')
+        attribute_value.splice(attribute_value.indexOf(value), 1)
+        attribute_value = attribute_value.join(',')
+        Attribute.findByIdAndUpdate(id, {
+            attribute_value
+        }).then(() => {
+            res.json({
+                data: {},
+                meta: {
+                    msg: '删除属性值成功！',
+                    status: 200
+                }
+            })
+        })
+    })
+})
+
+// 删除属性
+router.post('/delete/attribute', (req, res) => {
+    let id = req.body.id
+    Attribute.findByIdAndDelete(id).then(() => {
+        res.json({
+            data: {},
+            meta: {
+                msg: '删除属性成功！',
+                status: 200
+            }
+        })
+    })
 })
 
 /**
@@ -334,8 +679,12 @@ router.get('/api/private/carousel', (req, res) => {
 })
 
 // 获取分类列表
-router.get('/api/private/get/calssification', (req, res) => {
+router.get('/api/private/get/classification', (req, res) => {
     Classification.find()
+        .sort({
+            last_modify_time: -1
+        })
+        .exec()
         .then(result => {
             res.json({
                 data: {

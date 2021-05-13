@@ -3,52 +3,97 @@ let mongoose = require('mongoose')
 
 let Schema = mongoose.Schema
 
-let goodSchema = new Schema({
-    // 拥有该商品的用户 id
-    user_id: {
-        type: String,
+let goodsSchema = new Schema({
+    // 商品 id
+    goods_id: {
+        type: Number,
         required: true
     },
     // 商品名称
-    good_name: {
+    goods_name: {
+        type: String,
+        required: true
+    },
+    // 商品描述
+    describe: {
         type: String,
         required: true
     },
     // 商品价格
-    good_price: {
+    price: {
         type: Number,
         required: true
     },
+    // 商品原价
+    original_price: {
+        type: Number,
+        required: true
+    },
+    // 商品折扣价
+    discount_price: {
+        type: Number,
+        required: true
+    },
+    // 商品数量
+    goods_number: {
+        type: Number,
+        required: true
+    },
+    // 商品分类
+    classification: {
+        type: String,
+        required: true
+    },
+    // 商品图片列表
+    img_list: {
+        type: Array,
+        required: true
+    },
+    // 商品详情
+    details: {
+        type: String
+    },
+    // 商品属性
+    attribute: {
+        type: Array,
+        required: true
+    },
+    // 商品参数
+    parameter: {
+        type: Array
+    },
+    // 商品是否已经删除
+    is_delete: {
+        type: Number,
+        default: 0,
+        enum: [1, 0] // 0 未删除， 1 已经删除
+    },
+    // 商品是否上架
+    is_sale: {
+        type: Number,
+        default: 1,
+        enum: [1, 0] // 0 未上架、已经下架， 1 已经上架
+    },
     // 月销
-    sales: {
+    monthly_sales: {
         type: Number,
         default: 0
     },
-    // 商品图片
-    good_img: {
-        type: String,
-        required: true
+    // 总销量
+    total_sales: {
+        type: Number,
+        default: 0
     },
-    // 商品种类
-    good_type: {
-        type: String,
-        required: true
+    // 创建时间
+    created_time: {
+        type: Date,
+        default: Date.now
     },
-    // 一级分类
-    classification1: {
-        type: String,
-        required: true
-    },
-    // 二级分类
-    classification2: {
-        type: String,
-        required: true
-    },
-    // 添加时间
-    add_time: {
+    // 最后一次修改的时间
+    last_modify_time: {
         type: Date,
         default: Date.now
     }
 })
 
-module.exports = mongoose.model('Good', goodSchema)
+module.exports = mongoose.model('Good', goodsSchema)

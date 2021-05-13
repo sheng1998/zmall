@@ -1,5 +1,6 @@
 <template>
   <div class="manage-logo">
+    <div class="xmf-system-flex fzzj">商城 LOGO 管理</div>
     <el-card class="history-logo">
       <div class="title">
         <span>历史 logo</span>, 第一个为目前正在使用的 logo,

@@ -1,5 +1,6 @@
 <template>
   <div class="manage-nav">
+    <div class="xmf-system-flex fzzj">商城导航栏（商品分类）管理</div>
     <!-- 分类列表 -->
     <el-card class="nav-card">
       <el-row class="add-classification-btn">
@@ -21,7 +22,7 @@
                   class="item"
                   effect="light"
                   content="修改分类参数"
-                  placement="left-start"
+                  placement="top-end"
                 >
                   <el-button
                     size="mini"
@@ -33,12 +34,29 @@
                   ></el-button>
                 </el-tooltip>
 
+                <!-- 置顶分类参数 -->
+                <el-tooltip
+                  class="item"
+                  effect="light"
+                  content="置顶该分类参数，设置该分类参数为导航栏的第一条数据。"
+                  placement="top-end"
+                >
+                  <el-button
+                    size="mini"
+                    plain
+                    type="success"
+                    icon="el-icon-top"
+                    circle
+                    @click="topClass(scope.row)"
+                  ></el-button>
+                </el-tooltip>
+
                 <!-- 删除分类参数 -->
                 <el-tooltip
                   class="item"
                   effect="light"
                   content="删除分类参数"
-                  placement="left-start"
+                  placement="top-end"
                 >
                   <el-button
                     size="mini"
@@ -58,7 +76,11 @@
 
     <!-- 添加分类对话框 -->
     <div class="addclass-dialog">
-      <el-dialog title="添加分类" :visible.sync="dialogFormVisible">
+      <el-dialog
+        title="添加分类"
+        :visible.sync="dialogFormVisible"
+        @closed="closeDia"
+      >
         <el-form :model="form">
           <el-form-item label="分类名称" label-width="80px">
             <el-input v-model="form.class_name" autocomplete="off"></el-input>
@@ -78,7 +100,11 @@
 
     <!-- 修改分类对话框 -->
     <div class="addclass-dialog">
-      <el-dialog title="修改分类参数" :visible.sync="dialogFormVisible2">
+      <el-dialog
+        title="修改分类参数"
+        :visible.sync="dialogFormVisible2"
+        @closed="closeDia"
+      >
         <el-form :model="form">
           <el-form-item label="分类名称" label-width="80px">
             <el-input v-model="form.class_name" autocomplete="off"></el-input>
@@ -118,7 +144,7 @@ export default {
   methods: {
     // 获取分类参数列表
     getClssificationList () {
-      this.$axios.get('/get/calssification').then(res => {
+      this.$axios.get('/get/classification').then(res => {
         if (res.data.meta.status === 200) {
           this.classList = res.data.data.class_list
         }
@@ -132,13 +158,13 @@ export default {
       } else if (this.form.class_path.trim() === '') {
         this.$message.error('请输入分类路径！')
       } else {
-        this.$axios.post('/add/calssification', this.form).then(res => {
+        this.$axios.post('/add/classification', this.form).then(res => {
           if (res.data.meta.status === 200) {
-            this.form.class_name = ''
-            this.form.class_path = ''
             this.$message.success('添加成功！')
             this.getClssificationList()
             this.dialogFormVisible = false
+          } else {
+            this.$message.warning(res.data.meta.msg)
           }
         })
       }
@@ -154,24 +180,28 @@ export default {
 
     // 修改分类参数
     alterClassification () {
-      this.$axios
-        .post('/alter/calssification', {
-          id: this.form.id,
-          class_name: this.form.class_name,
-          class_path: this.form.class_path
-        })
-        .then(res => {
-          let status = res.data.meta.status
-          if (status === 200) {
-            this.$message.success('修改分类参数成功！')
-            this.form.class_name = ''
-            this.form.class_path = ''
-            this.dialogFormVisible2 = false
-            this.getClssificationList()
-          } else {
-            this.$message.error('修改分类参数失败！')
-          }
-        })
+      if (this.form.class_name.trim() === '') {
+        this.$message.error('请输入分类名！')
+      } else if (this.form.class_path.trim() === '') {
+        this.$message.error('请输入分类路径！')
+      } else {
+        this.$axios
+          .post('/alter/classification', {
+            id: this.form.id,
+            class_name: this.form.class_name,
+            class_path: this.form.class_path
+          })
+          .then(res => {
+            let status = res.data.meta.status
+            if (status === 200) {
+              this.$message.success('修改分类参数成功！')
+              this.dialogFormVisible2 = false
+              this.getClssificationList()
+            } else {
+              this.$message.warning(res.data.meta.msg)
+            }
+          })
+      }
     },
 
     // 删除分类参数
@@ -183,7 +213,7 @@ export default {
       })
         .then(() => {
           this.$axios
-            .post('/delete/calssification', {
+            .post('/delete/classification', {
               id: classification._id
             })
             .then(res => {
@@ -202,6 +232,25 @@ export default {
             message: '已取消删除'
           })
         })
+    },
+
+    // 关闭修改参数对话框
+    closeDia () {
+      this.form.class_name = ''
+      this.form.class_path = ''
+    },
+
+    // 置顶分类参数
+    topClass (nav) {
+      this.$axios.post('/top/classification', { id: nav._id }).then(res => {
+        let status = res.data.meta.status
+        if (status === 200) {
+          this.$message.success('置顶分类参数成功！')
+          this.getClssificationList()
+        } else {
+          this.$message.warning(res.data.meta.msg)
+        }
+      })
     }
   }
 }

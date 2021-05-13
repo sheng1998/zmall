@@ -5,7 +5,7 @@
         :index="'goods/list?classification=' + item.class_path"
         class="item"
         v-for="item in class_list"
-        :key="item.class_path"
+        :key="item._id"
       >
         {{ item.class_name }}
       </el-menu-item>
@@ -22,7 +22,7 @@ export default {
     }
   },
   created () {
-    this.$axios.get('/get/calssification').then(res => {
+    this.$axios.get('/get/classification').then(res => {
       if (res.data.meta.status === 200) {
         this.class_list = res.data.data.class_list
       }

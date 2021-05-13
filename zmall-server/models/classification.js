@@ -18,6 +18,11 @@ let classSchema = new Schema({
     created_time: {
         type: Date,
         default: Date.now
+    },
+    // 最后一次修改的时间
+    last_modify_time: {
+        type: Date,
+        default: Date.now
     }
 })
 
