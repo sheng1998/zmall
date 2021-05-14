@@ -139,6 +139,7 @@ export default {
   },
   created () {
     this.getClssificationList()
+    this.$store.commit('setActiveMenu', this.$route.path)
   },
   mounted () {},
   methods: {

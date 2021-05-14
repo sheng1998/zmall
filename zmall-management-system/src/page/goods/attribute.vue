@@ -214,6 +214,7 @@ export default {
   },
   created () {
     this.getAttributeList()
+    this.$store.commit('setActiveMenu', this.$route.path)
   },
   mounted () {},
   methods: {

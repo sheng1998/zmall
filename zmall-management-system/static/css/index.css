@@ -25,3 +25,7 @@
   margin-bottom: 20px;
   font-family: FZZJ, Georgia, 'Times New Roman', Times, serif;
 }
+
+.el-image-viewer__wrapper {
+  z-index: 3000!important;
+}

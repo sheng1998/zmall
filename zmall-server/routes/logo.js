@@ -26,7 +26,7 @@ router.all("*", function (req, res, next) {
 // 保存 logo
 router.post('/save/logo', (req, res) => {
     let path = req.body.url
-    let newPath = `./uploads/${path.split('\\')[1]}`
+    let newPath = `./uploads/logo/${path.split('\\')[1]}`
     copyFile(path, newPath, () => {
         new Logo({
             logo_url: `http://127.0.0.1:3002/uploads/logo/${path.split('\\')[1]}`

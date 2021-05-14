@@ -3,12 +3,39 @@
     <div class="xmf-system-flex fzzj">已下架商品列表</div>
     <!-- 商品列表 -->
     <el-card class="goods-list-table">
+      <el-row class="addgoods-search-input">
+        <el-input
+          class="search-input"
+          ref="search"
+          placeholder="请输入搜索内容"
+          prefix-icon="el-icon-search"
+          v-model="searchValue"
+          @keyup.enter.native="searchGoods"
+          @blur="searchGoods"
+        >
+          <el-button
+            slot="append"
+            icon="el-icon-search"
+            @click="searchGoods"
+          ></el-button>
+        </el-input>
+      </el-row>
       <el-table :data="goodsList" stripe style="width: 100%" border>
         <!-- 商品id -->
         <el-table-column
           prop="goods_id"
-          label="商品id"
-          width="120"
+          label="商品ID"
+          width="100"
+          sortable
+          align="center"
+        >
+        </el-table-column>
+
+        <!-- 库存 -->
+        <el-table-column
+          prop="goods_number"
+          label="库存"
+          width="100"
           sortable
           align="center"
         >
@@ -21,8 +48,13 @@
         <!-- 图片 -->
         <el-table-column label="图片" align="center">
           <template slot-scope="scope">
-            <div class="onsale-goods-imglist">
-              <el-carousel trigger="click" height="200px" :interval="5000">
+            <div class="offsale-goods-imglist">
+              <el-carousel
+                trigger="click"
+                height="200px"
+                :interval="5000"
+                indicator-position="none"
+              >
                 <el-carousel-item v-for="img in scope.row.img_list" :key="img">
                   <el-image
                     fit="cover"
@@ -96,7 +128,7 @@
     </el-card>
 
     <!-- 分页 -->
-    <div class="fenye" v-if="pagingForm.totalDate > 1">
+    <div class="fenye" v-if="pagingForm.totalDate > 5">
       <el-pagination
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
@@ -115,12 +147,15 @@
 export default {
   data () {
     return {
+      // 搜索框内容
+      searchValue: '',
       // 分页相关数据
       pagingForm: {
         currentPage: 1, // 当前页码
-        dataNumberArr: [1, 2, 4, 6, 8, 10, 15, 20, 30, 50, 100, 200, 500], // 每页可选显示数据条数数组
-        dataNumber: 1, // 每页显示数据条数
-        totalDate: 0 // 数据总数
+        dataNumberArr: [5, 10, 15, 20, 30, 50, 100, 200, 500], // 每页可选显示数据条数数组
+        dataNumber: 5, // 每页显示数据条数
+        totalDate: 0, // 数据总数
+        query: '' // 查询内容
       },
       goodsList: []
     }
@@ -128,6 +163,9 @@ export default {
 
   created () {
     this.getOffSaleGoodsList()
+    this.$nextTick(() => {
+      this.$refs.search.$refs.input.focus()
+    })
   },
 
   mounted () {},
@@ -139,7 +177,8 @@ export default {
         .get('/goods/offsale', {
           params: {
             page_size: this.pagingForm.currentPage,
-            data_number: this.pagingForm.dataNumber
+            data_number: this.pagingForm.dataNumber,
+            query: this.pagingForm.query
           }
         })
         .then(res => {
@@ -156,6 +195,14 @@ export default {
             this.$message.error(msg)
           }
         })
+    },
+
+    // 搜索商品
+    searchGoods () {
+      if (this.pagingForm.query !== this.searchValue) {
+        this.pagingForm.query = this.searchValue
+        this.getOffSaleGoodsList()
+      }
     },
 
     // 编辑商品上架状态
@@ -180,7 +227,8 @@ export default {
                 meta: { msg, status }
               } = res.data
               if (status === 200) {
-                this.$message.success('下架商品成功！')
+                this.$message.success('上架商品成功！')
+                this.$store.dispatch('getWarningGoodsNumber')
                 this.getOffSaleGoodsList()
               } else {
                 goods.onsale = false
@@ -198,7 +246,6 @@ export default {
 
     // 编辑商品
     toEditGoods (goods) {
-      console.log(goods)
       // 跳转到商品编辑页面
       this.$router.push({ name: 'editgoods' })
     },
@@ -249,10 +296,13 @@ export default {
 <style lang="less">
 .manage-goods-list-offsale {
   .goods-list-table {
-    .onsale-goods-imglist {
-      .el-carousel__button {
-        display: none;
-      }
+    .search-input {
+      float: right;
+      width: 400px;
+      margin-bottom: 20px;
+    }
+
+    .offsale-goods-imglist {
       img {
         height: 200px;
         width: auto;

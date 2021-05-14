@@ -1,7 +1,7 @@
 <template>
   <div class="left-nav">
     <el-menu
-      default-active="/home/manage/logo"
+      :default-active="$store.state.activeMenu"
       class="el-menu-vertical-demo"
       background-color="#545c64"
       text-color="#fff"
@@ -76,6 +76,26 @@
         </el-menu-item>
       </el-submenu>
 
+      <!-- 订单管理 -->
+      <el-menu-item index="/manage/order">
+        <i class="el-icon-setting"></i>
+        <span slot="title">订单管理</span>
+      </el-menu-item>
+
+      <!-- 库存预警 -->
+      <el-menu-item index="/manage/stockwarning" class="stockwarning">
+        <i class="el-icon-setting"></i>
+        <span slot="title" v-if="$store.state.warningGoodsNumber > 0"
+          ><el-badge
+            :value="$store.state.warningGoodsNumber"
+            :max="99"
+            class="item"
+            >库存预警
+          </el-badge></span
+        >
+        <span slot="title" v-else>库存预警</span>
+      </el-menu-item>
+
       <!-- 用户管理 -->
       <el-menu-item index="/manage/user">
         <i class="el-icon-setting"></i>
@@ -96,7 +116,10 @@ export default {
   data () {
     return {}
   },
-  created () {},
+  created () {
+    this.$store.dispatch('getWarningGoodsNumber')
+    this.$store.commit('setActiveMenu', this.$route.path)
+  },
   mounted () {},
   methods: {}
 }
@@ -110,6 +133,13 @@ export default {
 
   .el-menu {
     height: 100%;
+  }
+
+  .stockwarning {
+    .el-badge__content.is-fixed {
+      top: 27px;
+      right: -10px;
+    }
   }
 
   &::-webkit-scrollbar {

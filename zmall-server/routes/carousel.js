@@ -26,21 +26,44 @@ router.all("*", function (req, res, next) {
 
 // 获取轮播图数据
 router.get('/carousel', (req, res) => {
-    Carousel.find({
-            is_delete: 0
-        }).sort({
+    Carousel.find().sort({
             last_modify_time: -1
         })
         .exec()
         .then(result => {
-            res.json({
-                data: {
-                    carouselList: result
-                },
-                meta: {
-                    msg: '获取轮播图数据成功！',
-                    status: 200
-                }
+            let asyncArray = []
+            result.forEach((item, index) => {
+                asyncArray.push(
+                    new Promise((reslove, reject) => {
+                        Goods.findOne({
+                            goods_id: item.goods_id
+                        }).then(data => {
+                            reslove({
+                                goods_id: data.goods_id,
+                                goods_name: data.goods_name,
+                                _id: item._id,
+                                carousel_url: item.carousel_url,
+                                last_modify_time: item.last_modify_time
+                            })
+                        }).catch(err => {
+                            if (err) {
+                                reject(err)
+                            }
+                        })
+                    })
+                )
+            })
+
+            Promise.all(asyncArray).then((result) => {
+                res.json({
+                    data: {
+                        carouselList: result
+                    },
+                    meta: {
+                        msg: '获取轮播图数据成功！',
+                        status: 200
+                    }
+                })
             })
         })
 })
@@ -48,48 +71,30 @@ router.get('/carousel', (req, res) => {
 // 处理轮播图上传请求
 router.post('/uploads/carousel', (req, res) => {
     let goods_id = Number(req.body.goods_id)
-    let path = req.body.carousel.tmp_path
-    Goods.findOne({
-        goods_id
-    }).then(data => {
-        if (data) {
-            let newPath = `./uploads/carousel/${path.split('\\')[1]}`
-            copyFile(path, newPath, () => {
-                new Carousel({
-                    carousel_url: `http://127.0.0.1:3002/uploads/carousel/${path.split('\\')[1]}`,
-                    with_goods: goods_id,
-                    goods_name: data.goods_name
-                }).save().then(() => {
-                    res.json({
-                        data: {
-                            goods: data
-                        },
-                        meta: {
-                            msg: "保存成功",
-                            status: 200
-                        }
-                    })
-                }).catch(err => {
-                    res.json({
-                        data: {},
-                        meta: {
-                            msg: "保存失败！",
-                            status: 500
-                        }
-                    })
-                })
-            })
-        } else {
+    let path = req.body.tmp_path
+    let newPath = `uploads/carousel/${path.split('\\')[1]}`
+    copyFile(path, `./${newPath}`, () => {
+        new Carousel({
+            carousel_url: `http://127.0.0.1:3002/${newPath}`,
+            goods_id: goods_id
+        }).save().then(() => {
             res.json({
                 data: {},
                 meta: {
-                    msg: "保存失败，不存在该商品 id，请确保输入的商品 id 存在商品列表中！",
+                    msg: "保存成功",
+                    status: 200
+                }
+            })
+        }).catch(err => {
+            res.json({
+                data: {},
+                meta: {
+                    msg: "保存失败！",
                     status: 500
                 }
             })
-        }
+        })
     })
-
 })
 
 // 置顶轮播图
@@ -110,9 +115,7 @@ router.post('/top/carousel', (req, res) => {
 
 // 删除轮播图
 router.post('/delete/carousel', (req, res) => {
-    Carousel.findByIdAndUpdate(req.body.id, {
-        is_delete: 1
-    }).then(() => {
+    Carousel.findByIdAndDelete(req.body.id).then(() => {
         res.json({
             data: {},
             meta: {

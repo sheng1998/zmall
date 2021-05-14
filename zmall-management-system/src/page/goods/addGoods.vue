@@ -10,6 +10,7 @@
             class="form--inpu-item"
             clearable
             v-model="form.goods_name"
+            ref="goodsName"
           ></el-input>
         </el-form-item>
 
@@ -58,6 +59,49 @@
           ></el-input>
         </el-form-item>
 
+        <!-- 商品图片 -->
+        <el-form-item label="商品图片" prop="picture">
+          <template>
+            <div>
+              <el-upload
+                class="upload-demo"
+                drag
+                multiple
+                action="http://127.0.0.1:3002/uploads"
+                :on-preview="handlePreview"
+                :on-remove="handleRemove"
+                :on-success="handleSuccess"
+                :before-upload="beforeUpload"
+                :file-list="fileList"
+                list-type="picture"
+              >
+                <i class="el-icon-upload"></i>
+                <div class="el-upload__text">
+                  将文件拖到此处，或<em>点击上传</em>
+                </div>
+                <div slot="tip" class="el-upload__tip">
+                  只能上传jpg/png文件，且不超过 2MB
+                </div>
+              </el-upload>
+              <el-dialog :visible.sync="dialogVisible">
+                <img width="100%" :src="dialogImageUrl" alt="" />
+              </el-dialog>
+            </div>
+          </template>
+        </el-form-item>
+
+        <!-- 商品详情 -->
+        <el-form-item label="商品详情">
+          <template>
+            <div class="fuwenben">
+              <quill-editor
+                class="my-quill-editor"
+                v-model="form.details"
+              ></quill-editor>
+            </div>
+          </template>
+        </el-form-item>
+
         <!-- 商品分类 -->
         <el-form-item label="商品分类" prop="classification">
           <template>
@@ -80,44 +124,6 @@
               <el-button type="primary" @click="toAddClassification"
                 >前往添加新的分类</el-button
               >
-            </div>
-          </template>
-        </el-form-item>
-
-        <!-- 商品图片 -->
-        <el-form-item label="商品图片" prop="picture">
-          <template>
-            <div>
-              <el-upload
-                class="upload-demo"
-                action="http://127.0.0.1:3002/uploads"
-                :on-preview="handlePreview"
-                :on-remove="handleRemove"
-                :on-success="handleSuccess"
-                :before-upload="beforeUpload"
-                :file-list="fileList"
-                list-type="picture"
-              >
-                <el-button size="small" type="primary">点击上传</el-button>
-                <div slot="tip" class="el-upload__tip">
-                  只能上传jpg/png文件，且不超过 2MB
-                </div>
-              </el-upload>
-              <el-dialog :visible.sync="dialogVisible">
-                <img width="100%" :src="dialogImageUrl" alt="" />
-              </el-dialog>
-            </div>
-          </template>
-        </el-form-item>
-
-        <!-- 商品详情 -->
-        <el-form-item label="商品详情">
-          <template>
-            <div class="fuwenben">
-              <quill-editor
-                class="my-quill-editor"
-                v-model="form.details"
-              ></quill-editor>
             </div>
           </template>
         </el-form-item>
@@ -155,14 +161,7 @@
                   <el-table-column label="属性值">
                     <template slot-scope="scope">
                       <div>
-                        <el-checkbox-group
-                          v-model="checkedAttributeValueList"
-                          @change="
-                            handleCheckedattributeChange(
-                              scope.row.attribute_name
-                            )
-                          "
-                        >
+                        <el-checkbox-group v-model="checkedAttributeValueList">
                           <el-checkbox
                             v-for="item in scope.row.children"
                             :label="
@@ -451,6 +450,7 @@
 
       <!-- 保存按钮 -->
       <div class="goodsinfo-submit-btn xmf-system-flex">
+        <el-button type="danger" @click="clearFormData">清空表单数据</el-button>
         <el-button type="success" @click="temporarySaveDataToLocalStorage"
           >临时保存商品数据</el-button
         >
@@ -559,6 +559,7 @@ export default {
       attributeList: [], // 属性列表的数据
       checkedAttributeValueList: [],
       fileList: [],
+      tmpFileList: [],
       dialogImageUrl: '',
       dialogVisible: false,
       bodyParameterList: [],
@@ -586,6 +587,10 @@ export default {
   created () {
     this.getLocalStorage()
     this.getClassification()
+    this.$store.commit('setActiveMenu', this.$route.path)
+    this.$nextTick(() => {
+      this.$refs.goodsName.$refs.input.focus()
+    })
   },
 
   // 生命周期钩子 mounted
@@ -646,6 +651,7 @@ export default {
         this.fileList = JSON.parse(
           window.localStorage.getItem('addGoodsData-fileList')
         )
+        this.tmpFileList = this.fileList
       }
       if (window.localStorage.getItem('addGoodsData-bodyParameterList')) {
         this.bodyParameterList = JSON.parse(
@@ -665,17 +671,29 @@ export default {
         )
       }
       if (this.form.classification) {
-        this.getattribute()
+        this.getAttribute(() => {
+          if (
+            window.localStorage.getItem(
+              'addGoodsData-checkedAttributeValueList'
+            )
+          ) {
+            this.checkedAttributeValueList = JSON.parse(
+              window.localStorage.getItem(
+                'addGoodsData-checkedAttributeValueList'
+              )
+            )
+          }
+        })
       }
     },
 
     // 商品分类值改变时触发
     classificationChange () {
-      this.getattribute()
+      this.getAttribute()
     },
 
     // 根据分类获取属性
-    getattribute () {
+    getAttribute (callback) {
       this.$axios
         .get('/get/attribute/withclass', {
           params: {
@@ -685,6 +703,9 @@ export default {
         .then(res => {
           this.attributeList = res.data.data.attribute_list
           this.checkedAttributeValueList = []
+          if (callback && typeof callback === 'function') {
+            callback()
+          }
         })
     },
 
@@ -714,16 +735,16 @@ export default {
     },
 
     // 图片上传成功后触发该方法
-    handleSuccess (response, file) {
-      this.fileList.push({
-        name: file.name,
-        tmp_path: response.data.tmp_path,
-        url: response.data.url
-      })
+    handleSuccess (response) {
+      this.tmpFileList.push(response.data)
     },
 
     // 文件列表移除文件触发该方法
     handleRemove (file) {
+      this.tmpFileList.forEach(item => {
+        item.name = '点击预览图片'
+      })
+      this.fileList = this.tmpFileList
       this.fileList.forEach((item, index) => {
         if (item.uid === file.uid) {
           this.fileList.splice(index, 1)
@@ -735,12 +756,6 @@ export default {
     handlePreview (file) {
       this.dialogImageUrl = file.url
       this.dialogVisible = true
-    },
-
-    // 选择属性值触发该方法
-    handleCheckedattributeChange (attributeName) {
-      // console.log(this.checkedAttributeValueList)
-      // console.log(attributeName)
     },
 
     // 显示添加参数对话框
@@ -829,6 +844,7 @@ export default {
             }
           })
           this[current] = newArr
+          this.$message.success('参数值修改成功！')
           this.parameterDialogVisible2 = false
         }
       }
@@ -860,8 +876,56 @@ export default {
         })
     },
 
+    // 清空表单数据
+    clearFormData () {
+      this.$confirm(
+        '是否要清空表单所有数据？该操作不会清除临时保存的数据，只会清除页面上表单的数据，刷新页面就可以恢复临时保存的数据，可以先清除表单数据再点击临时保存商品数据来达到永久性清除表单数据。',
+        '提示',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }
+      )
+        .then(() => {
+          this.form.goods_name = ''
+          this.form.describe = ''
+          this.form.price = ''
+          this.form.original_price = ''
+          this.form.discount_price = ''
+          this.form.classification = ''
+          this.form.img_list = []
+          this.form.goods_number = ''
+          this.form.details = ''
+          this.form.attribute = []
+          this.form.parameter = {}
+          this.attributeList = []
+          this.checkedAttributeValueList = []
+          this.fileList = []
+          this.tmpFileList = []
+          this.bodyParameterList = []
+          this.mainParameterList = []
+          this.sizeAndWeightParameterList = []
+          this.$message({
+            type: 'success',
+            message: '清除成功!'
+          })
+        })
+        .catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消清除'
+          })
+        })
+    },
+
     // 临时保存商品数据到 localStorage 中
     temporarySaveDataToLocalStorage () {
+      this.tmpFileList.forEach(item => {
+        item.name = '点击预览图片'
+      })
+      this.fileList = this.tmpFileList
+      console.log(this.tmpFileList)
       window.localStorage.setItem(
         'addGoodsData-form',
         JSON.stringify(this.form)
@@ -895,7 +959,6 @@ export default {
         JSON.stringify(this.sizeAndWeightParameterList)
       )
       this.$message.success('保存成功！')
-      this.isSubmit = true
     },
 
     // 清除保存到 localStorage 的商品数据
@@ -912,6 +975,10 @@ export default {
 
     // 提交商品到后台数据库保存
     saveGoods () {
+      this.tmpFileList.forEach(item => {
+        item.name = '点击预览图片'
+      })
+      this.fileList = this.tmpFileList
       if (this.form.goods_name.trim() === '') {
         return this.$message.error('必须填写商品名称!')
       } else if (this.form.describe.trim() === '') {
@@ -988,6 +1055,7 @@ export default {
           this.$axios.post('/add/goods', this.form).then(res => {
             if (res.data.meta.status === 200) {
               this.$message.success('添加商品成功！')
+              this.$store.dispatch('getWarningGoodsNumber')
               this.clearDataInLocalStorage()
               this.isSubmit = true
               this.$router.push({ name: 'goodslist' })
@@ -1022,6 +1090,7 @@ export default {
             type: 'info',
             message: '已取消跳转'
           })
+          this.$store.commit('setActiveMenu', '/goods/manage/addgoods')
         })
     } else {
       next()

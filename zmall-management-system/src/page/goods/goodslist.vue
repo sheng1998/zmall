@@ -5,13 +5,38 @@
     <el-card class="goods-list-table">
       <el-row class="addgoods-btn">
         <el-button type="primary" @click="toAddGoods">添加商品</el-button>
+        <el-input
+          class="search-input"
+          ref="search"
+          placeholder="请输入搜索内容"
+          prefix-icon="el-icon-search"
+          v-model="searchValue"
+          @keyup.enter.native="searchGoods"
+          @blur="searchGoods"
+        >
+          <el-button
+            slot="append"
+            icon="el-icon-search"
+            @click="searchGoods"
+          ></el-button>
+        </el-input>
       </el-row>
       <el-table :data="goodsList" stripe style="width: 100%" border>
         <!-- 商品id -->
         <el-table-column
           prop="goods_id"
-          label="商品id"
-          width="120"
+          label="商品ID"
+          width="100"
+          sortable
+          align="center"
+        >
+        </el-table-column>
+
+        <!-- 库存 -->
+        <el-table-column
+          prop="goods_number"
+          label="库存"
+          width="100"
           sortable
           align="center"
         >
@@ -25,7 +50,12 @@
         <el-table-column label="图片" align="center">
           <template slot-scope="scope">
             <div class="onsale-goods-imglist">
-              <el-carousel trigger="click" height="200px" :interval="5000">
+              <el-carousel
+                trigger="click"
+                height="200px"
+                :interval="5000"
+                indicator-position="none"
+              >
                 <el-carousel-item v-for="img in scope.row.img_list" :key="img">
                   <el-image
                     fit="cover"
@@ -118,12 +148,15 @@
 export default {
   data () {
     return {
+      // 搜索框内容
+      searchValue: '',
       // 分页相关数据
       pagingForm: {
         currentPage: 1, // 当前页码
-        dataNumberArr: [2, 4, 6, 8, 10, 15, 20, 30, 50, 100, 200, 500], // 每页可选显示数据条数数组
-        dataNumber: 2, // 每页显示数据条数
-        totalDate: 0 // 数据总数
+        dataNumberArr: [5, 10, 15, 20, 30, 50, 100, 200, 500], // 每页可选显示数据条数数组
+        dataNumber: 5, // 每页显示数据条数
+        totalDate: 0, // 数据总数
+        query: '' // 查询内容
       },
       goodsList: []
     }
@@ -131,6 +164,10 @@ export default {
 
   created () {
     this.getOnsaleGoodsList()
+    this.$store.commit('setActiveMenu', this.$route.path)
+    this.$nextTick(() => {
+      this.$refs.search.$refs.input.focus()
+    })
   },
 
   mounted () {},
@@ -142,7 +179,8 @@ export default {
         .get('/goods/onsale', {
           params: {
             page_size: this.pagingForm.currentPage,
-            data_number: this.pagingForm.dataNumber
+            data_number: this.pagingForm.dataNumber,
+            query: this.pagingForm.query
           }
         })
         .then(res => {
@@ -161,9 +199,16 @@ export default {
         })
     },
 
+    // 搜索商品
+    searchGoods () {
+      if (this.pagingForm.query !== this.searchValue) {
+        this.pagingForm.query = this.searchValue
+        this.getOnsaleGoodsList()
+      }
+    },
+
     // 跳转到添加商品页面
     toAddGoods () {
-      console.log('goods')
       // 跳转到商品添加页面
       this.$router.push({ name: 'addgoods' })
     },
@@ -191,6 +236,7 @@ export default {
               } = res.data
               if (status === 200) {
                 this.$message.success('下架商品成功！')
+                this.$store.dispatch('getWarningGoodsNumber')
                 this.getOnsaleGoodsList()
               } else {
                 goods.onsale = true
@@ -208,9 +254,8 @@ export default {
 
     // 编辑商品
     toEditGoods (goods) {
-      console.log(goods)
       // 跳转到商品编辑页面
-      this.$router.push({ name: 'editgoods' })
+      this.$router.push({ path: `/goods/manage/editgoods?goods_id=${goods.goods_id}` })
     },
 
     // 删除商品
@@ -227,6 +272,7 @@ export default {
             } = res.data
             if (status === 200) {
               this.$message.success('删除商品成功！')
+              this.$store.dispatch('getWarningGoodsNumber')
               this.getOnsaleGoodsList()
             } else {
               this.$message.error(msg)
@@ -263,10 +309,12 @@ export default {
       margin-bottom: 20px;
     }
 
+    .search-input {
+      float: right;
+      width: 400px;
+    }
+
     .onsale-goods-imglist {
-      .el-carousel__button {
-        display: none;
-      }
       img {
         height: 200px;
         width: auto;

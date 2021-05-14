@@ -10,20 +10,9 @@ let carouselSchema = new Schema({
         required: true
     },
     // 轮播图绑定的商品
-    with_goods: {
+    goods_id: {
         type: Number,
         required: true
-    },
-    // 轮播图绑定的商品名称
-    goods_name: {
-        type: String,
-        required: true
-    },
-    // 是否已经删除
-    is_delete: {
-        type: Number,
-        default: 0,
-        enum: [1, 0] // 0 未删除， 1 已经删除
     },
     // 创建时间
     created_time: {

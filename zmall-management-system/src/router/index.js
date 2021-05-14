@@ -9,10 +9,11 @@ import OffSaleGoodsList from '@/page/goods/offsaleGoodsList'
 import AddGoods from '@/page/goods/addGoods'
 import EditGoods from '@/page/goods/editGoods'
 import Attribute from '@/page/goods/attribute'
+import StockWarning from '@/page/stockWarning/stockWarning'
 
 Vue.use(Router)
 
-export default new Router({
+const router = new Router({
   routes: [
     {
       path: '/',
@@ -38,37 +39,51 @@ export default new Router({
           name: 'nav',
           component: Nav
         },
+        // 在售商品列表页面路由
         {
           path: '/goods/manage/list',
           name: 'goodslist',
           component: GoodsList
         },
+        // 下架商品列表页面路由
         {
           path: '/goods/manage/list/offsale',
           name: 'offsalegoodslist',
           component: OffSaleGoodsList
         },
+        // 分类管理页面路由
         {
           path: '/goods/manage/classification',
           name: 'classification',
           component: Nav
         },
+        // 添加商品页面路由
         {
           path: '/goods/manage/addgoods',
           name: 'addgoods',
           component: AddGoods
         },
+        // 编辑商品页面路由
         {
           path: '/goods/manage/editgoods',
           name: 'editgoods',
           component: EditGoods
         },
+        // 属性管理页面路由
         {
           path: '/goods/manage/attribute',
           name: 'attribute',
           component: Attribute
+        },
+        // 库存预警页面路由
+        {
+          path: '/manage/stockwarning',
+          name: 'stockwarning',
+          component: StockWarning
         }
       ]
     }
   ]
 })
+
+export default router

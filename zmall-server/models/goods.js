@@ -60,7 +60,7 @@ let goodsSchema = new Schema({
     },
     // 商品参数
     parameter: {
-        type: Array
+        type: Object
     },
     // 商品是否已经删除
     is_delete: {

@@ -73,11 +73,15 @@
         请在加号处选择轮播图上传，然后在下方表格中预览并确定上传作为轮播图。
       </div>
       <el-upload
+        class="upload-demo"
+        drag
+        multiple
+        :show-file-list="false"
         action="http://127.0.0.1:3002/uploads"
-        list-type="picture-card"
         :on-success="handleSuccess"
       >
-        <i class="el-icon-plus"></i>
+        <i class="el-icon-upload"></i>
+        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
       </el-upload>
     </div>
 
@@ -146,15 +150,77 @@
       </el-table>
     </div>
 
-    <!-- 上传轮播图绑定商品 id 的对话框 -->
+    <!-- 上传轮播图绑定商品对话框 -->
     <el-dialog
       title="绑定商品"
       :visible.sync="dialogFormVisible"
       @closed="closedDia"
     >
-      <el-form :model="form">
-        <el-form-item label="绑定商品id" label-width="120px">
-          <el-input v-model="form.goods_id" autocomplete="off"></el-input>
+      <el-form :model="goodsStarp" class="carousel-goods-starp">
+        <!-- 商品名称 -->
+        <el-form-item label="商品名称" label-width="120px">
+          <el-select
+            v-model="goodsStarp.value"
+            filterable
+            remote
+            clearable
+            placeholder="请输入商品名称"
+            :remote-method="remoteMethod"
+            :loading="goodsStarp.loading"
+            @change="selectChange"
+            popper-class="carousel-search-select"
+          >
+            <el-option
+              v-for="item in goodsStarp.options"
+              :key="item.goods_id"
+              :label="item.goods_name"
+              :value="item.goods_id"
+            >
+            </el-option>
+          </el-select>
+        </el-form-item>
+
+        <!-- 商品id -->
+        <el-form-item label="已选择商品的id" label-width="120px">
+          <el-input
+            disabled
+            v-model="goodsStarp.value"
+            placeholder="未选择商品"
+          ></el-input>
+        </el-form-item>
+
+        <!-- 商品图片预览 -->
+        <el-form-item
+          label="商品图片预览"
+          class="goods-img"
+          label-width="120px"
+          v-if="goodsStarp.value"
+        >
+          <template>
+            <div>
+              <el-carousel height="200px" indicator-position="none">
+                <el-carousel-item
+                  v-for="item in goodsStarp.goodsImgList"
+                  :key="item"
+                >
+                  <el-image
+                    fit="cover"
+                    :src="item"
+                    :preview-src-list="goodsStarp.goodsImgList"
+                  ></el-image>
+                </el-carousel-item>
+              </el-carousel>
+            </div>
+          </template>
+        </el-form-item>
+        <!-- 商品图片预览 -->
+        <el-form-item
+          label="商品图片预览"
+          class="goods-img"
+          label-width="120px"
+          v-else
+        >
+          <el-input disabled value="未选择商品"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -171,11 +237,16 @@ export default {
     return {
       carouselList: [],
       notUploadsImgList: [],
-      form: {
-        goods_id: '',
-        carousel: {}
-      },
-      dialogFormVisible: false
+      dialogFormVisible: false,
+      // 绑定商品对话框相关数据
+      goodsStarp: {
+        carousel: {},
+        options: [],
+        value: '',
+        list: [],
+        loading: false,
+        goodsImgList: []
+      }
     }
   },
 
@@ -288,40 +359,92 @@ export default {
 
     // 上传轮播图
     uploadsCarousel () {
-      this.$axios.post('/uploads/carousel', this.form).then(res => {
-        let status = res.data.meta.status
-        if (status === 200) {
-          this.$message.success('上传成功！')
-          let temArr = this.notUploadsImgList.filter(item => {
-            return item.url !== this.form.carousel.url
-          })
-          this.notUploadsImgList = temArr
-          this.$mycookie.setCookie(
-            'notUploadsImgList',
-            JSON.stringify(this.notUploadsImgList),
-            60 * 60
-          )
-          this.getCarouselList()
-          this.dialogFormVisible = false
-        } else {
-          this.$message.error(res.data.meta.msg)
-        }
-      })
+      if (!this.goodsStarp.value) {
+        return this.$message.error('请先选择要绑定的商品！')
+      }
+      this.$axios
+        .post('/uploads/carousel', {
+          goods_id: this.goodsStarp.value,
+          tmp_path: this.goodsStarp.carousel.tmp_path
+        })
+        .then(res => {
+          let status = res.data.meta.status
+          if (status === 200) {
+            this.$message.success('上传成功！')
+            let temArr = this.notUploadsImgList.filter(item => {
+              return item.url !== this.goodsStarp.carousel.url
+            })
+            this.notUploadsImgList = temArr
+            this.$mycookie.setCookie(
+              'notUploadsImgList',
+              JSON.stringify(this.notUploadsImgList),
+              60 * 60
+            )
+            this.getCarouselList()
+            this.dialogFormVisible = false
+          } else {
+            this.$message.error(res.data.meta.msg)
+          }
+        })
     },
 
-    // 显示绑定商品 id 对话框
+    // 显示绑定商品对话框
     showDia (carousel) {
       if (this.carouselList.length >= 10) {
         return this.$message.warning('上传失败，最多允许有10张图片作为轮播图！')
       }
       this.dialogFormVisible = true
-      this.form.carousel = carousel
+      console.log(carousel)
+      this.goodsStarp.carousel = carousel
+    },
+
+    // 远程搜索商品
+    remoteMethod (query) {
+      if (query !== '') {
+        this.goodsStarp.loading = true
+        this.$axios
+          .get('/goods/withname', {
+            params: {
+              query
+            }
+          })
+          .then(res => {
+            let {
+              data,
+              meta: { msg, status }
+            } = res.data
+            if (status === 200) {
+              this.goodsStarp.options = data.goods_list
+              this.goodsStarp.loading = false
+            } else {
+              this.$message.error(msg)
+              this.goodsStarp.options = []
+            }
+          })
+      } else {
+        this.goodsStarp.options = []
+      }
+    },
+
+    // 可搜索下拉选择器选中值改变
+    selectChange () {
+      if (this.goodsStarp.value) {
+        this.goodsStarp.options.forEach(item => {
+          if (item.goods_id === Number(this.goodsStarp.value)) {
+            this.goodsStarp.goodsImgList = item.img_list
+          }
+        })
+      }
     },
 
     // 关闭对话框触发
     closedDia () {
-      this.form.goods_id = ''
-      this.form.carousel = {}
+      this.goodsStarp.carousel = {}
+      this.goodsStarp.options = []
+      this.goodsStarp.value = ''
+      this.goodsStarp.list = []
+      this.goodsStarp.loading = false
+      this.goodsStarp.goodsImgList = []
     }
   }
 }
@@ -363,12 +486,9 @@ export default {
       color: turquoise;
     }
   }
+
   .uploads-carousel {
     margin-top: 30px;
-
-    .el-upload-list.el-upload-list--picture-card {
-      display: none;
-    }
 
     .choice-carousel {
       font-size: 18px;
@@ -377,5 +497,31 @@ export default {
       margin-bottom: 10px;
     }
   }
+
+  .carousel-goods-starp {
+    .el-select {
+      width: 100%;
+    }
+
+    .goods-img {
+      .el-carousel__button {
+        display: none;
+      }
+
+      .el-carousel__item {
+        display: flex;
+        justify-content: center;
+      }
+
+      img {
+        height: 200px;
+        width: auto;
+      }
+    }
+  }
+}
+
+.carousel-search-select {
+  max-width: 500px;
 }
 </style>
