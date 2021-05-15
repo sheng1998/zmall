@@ -44,9 +44,7 @@ router.get('/api/private/get/logo', (req, res) => {
 
 // 获取轮播图数据
 router.get('/api/private/carousel', (req, res) => {
-    Carousel.find({
-            is_delete: 0
-        }).sort({
+    Carousel.find().sort({
             last_modify_time: -1
         })
         .exec()

@@ -1149,6 +1149,11 @@ export default {
         margin-bottom: 12px;
       }
     }
+
+    ul.el-upload-list {
+      width: 60%;
+      max-width: 500px;
+    }
   }
 
   input::-webkit-outer-spin-button,

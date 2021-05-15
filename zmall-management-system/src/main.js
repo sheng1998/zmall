@@ -15,6 +15,7 @@ import MyCookie from './plugin/mycookie.js' // 引入自定义的 cookie 插件
 
 // 导入过滤器
 import './filters/fmtdata.js' // 引入时间过滤器
+import './filters/formattedAmount.js' // 引入金额格式化过滤器
 
 // 导入样式文件
 import 'element-ui/lib/theme-chalk/index.css' // 引入 element-ui 样式文件

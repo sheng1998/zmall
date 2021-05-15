@@ -1,26 +1,6 @@
 <template>
   <div class="stock-warning">
     <el-table :data="goodsList" stripe style="width: 100%" border>
-      <!-- 商品id -->
-      <el-table-column
-        prop="goods_id"
-        label="商品ID"
-        width="100"
-        sortable
-        align="center"
-      >
-      </el-table-column>
-
-      <!-- 库存 -->
-      <el-table-column
-        prop="goods_number"
-        label="库存"
-        width="100"
-        sortable
-        align="center"
-      >
-      </el-table-column>
-
       <!-- 名称 -->
       <el-table-column prop="goods_name" label="名称" align="center" sortable>
       </el-table-column>
@@ -31,7 +11,7 @@
           <div class="goods-imglist">
             <el-carousel
               trigger="click"
-              height="200px"
+              height="50px"
               :interval="5000"
               indicator-position="none"
             >
@@ -44,6 +24,49 @@
               </el-carousel-item>
             </el-carousel>
           </div>
+        </template>
+      </el-table-column>
+
+      <!-- 库存 -->
+      <el-table-column
+        prop="goods_number"
+        label="库存"
+        width="100"
+        sortable
+        align="center"
+      >
+      </el-table-column>
+
+      <!-- 月销 -->
+      <el-table-column
+        prop="monthly_sales"
+        label="月销量"
+        width="100"
+        sortable
+        align="center"
+      >
+      </el-table-column>
+
+      <!-- 总销量 -->
+      <el-table-column
+        prop="total_sales"
+        label="总销量"
+        width="100"
+        sortable
+        align="center"
+      >
+      </el-table-column>
+
+      <!-- 价格 -->
+      <el-table-column
+        prop="price"
+        label="价格"
+        width="100"
+        sortable
+        align="center"
+      >
+        <template slot-scope="scope">
+          <div>{{ scope.row.price | fmtAmount }}元</div>
         </template>
       </el-table-column>
 
@@ -206,7 +229,9 @@ export default {
     // 编辑商品
     toEditGoods (goods) {
       // 跳转到商品编辑页面
-      this.$router.push({ name: 'editgoods' })
+      this.$router.push({
+        path: `/goods/manage/editgoods?goods_id=${goods.goods_id}`
+      })
     },
 
     // 删除商品
@@ -256,7 +281,7 @@ export default {
 .stock-warning {
   .goods-imglist {
     img {
-      height: 200px;
+      height: 50px;
       width: auto;
     }
   }

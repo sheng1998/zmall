@@ -60,3 +60,17 @@
   display: flex;
   align-items: center;
 }
+
+/* 设置字体 */
+@font-face {
+  font-family: 'FZZJ';
+  src: url(../font/FZZJ-HGXSJW.TTF);
+}
+
+.fzzj {
+  color: tomato;
+  font-size: 30px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  font-family: FZZJ, Georgia, 'Times New Roman', Times, serif;
+}

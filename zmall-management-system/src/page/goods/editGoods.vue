@@ -84,7 +84,6 @@
               <el-upload
                 class="upload-demo"
                 drag
-                multiple
                 action="http://127.0.0.1:3002/uploads"
                 :on-preview="handlePreview"
                 :on-remove="handleRemove"
@@ -111,7 +110,7 @@
         <!-- 商品详情 -->
         <el-form-item label="商品详情">
           <template>
-            <div class="fuwenben">
+            <div class="fuwenben" @click="quillFocus">
               <quill-editor
                 ref="quillEditor"
                 class="my-quill-editor"
@@ -580,7 +579,6 @@ export default {
       attributeList: [], // 属性列表的数据
       checkedAttributeValueList: [],
       fileList: [],
-      tmpFileList: [],
       dialogImageUrl: '',
       dialogVisible: false,
       bodyParameterList: [],
@@ -609,13 +607,11 @@ export default {
     this.getClassification()
     this.getGoodsInfo()
     this.$store.commit('setActiveMenu', '/goods/manage/list')
-    this.$nextTick(() => {
-      this.$refs.quillEditor.quill.enable(false)
-      setTimeout(() => {
-        this.$refs.quillEditor.quill.enable(true)
-        this.$refs.goodsName.$refs.input.focus()
-      }, 1000)
-    })
+    if (this.currentGoodsId) {
+      this.$nextTick(() => {
+        this.$refs.quillEditor.quill.enable(false)
+      })
+    }
   },
 
   // 生命周期钩子 mounted
@@ -633,6 +629,11 @@ export default {
 
   // 组件中用到的方法
   methods: {
+    quillFocus () {
+      this.$refs.quillEditor.quill.enable(true)
+      this.$refs.quillEditor.quill.focus()
+    },
+
     // 获取商品数据
     getGoodsInfo () {
       this.currentGoodsId = this.$route.query.goods_id
@@ -657,6 +658,9 @@ export default {
               this.currentGoodsId = null
             } else {
               this.form = data
+              setTimeout(() => {
+                this.$refs.goodsName.$refs.input.focus()
+              }, 30)
               // 处理图片列表
               this.handleImgList(this.form.img_list)
 
@@ -676,13 +680,12 @@ export default {
 
     // 处理获取到的图片数据
     handleImgList (imglist) {
+      this.fileList = []
       imglist.forEach(item => {
-        this.tmpFileList.push({
-          name: '点击预览图片',
-          url: item
-        })
+        let name = item.split('/')[item.split('/').length - 1]
         this.fileList.push({
-          name: '点击预览图片',
+          name: name,
+          tmp_path: item,
           url: item
         })
       })
@@ -702,14 +705,14 @@ export default {
 
     // 处理商品参数数据
     handleParames (parames) {
-      this.bodyParameterList = parames[0].body
-      this.mainParameterList = parames[0].body
-      this.sizeAndWeightParameterList = parames[0].body
+      this.bodyParameterList = parames.body
+      this.mainParameterList = parames.main
+      this.sizeAndWeightParameterList = parames.body
     },
 
     // 启动关闭和刷新提示
     beforeunloadHandler (e) {
-      if (this.$route.name === 'addgoods') {
+      if (this.$route.name === 'editgoods') {
         e.returnValue = '关闭提示'
       } else {
         window.onbeforeunload = null
@@ -774,15 +777,15 @@ export default {
 
     // 图片上传成功后触发该方法
     handleSuccess (response) {
-      this.tmpFileList.push(response.data)
+      this.fileList.push({
+        name: response.data.tmp_path.split('\\')[1],
+        tmp_path: response.data.tmp_path,
+        url: response.data.url
+      })
     },
 
     // 文件列表移除文件触发该方法
     handleRemove (file) {
-      this.tmpFileList.forEach(item => {
-        item.name = '点击预览图片'
-      })
-      this.fileList = this.tmpFileList
       this.fileList.forEach((item, index) => {
         if (item.uid === file.uid) {
           this.fileList.splice(index, 1)
@@ -940,7 +943,6 @@ export default {
           this.attributeList = []
           this.checkedAttributeValueList = []
           this.fileList = []
-          this.tmpFileList = []
           this.bodyParameterList = []
           this.mainParameterList = []
           this.sizeAndWeightParameterList = []
@@ -959,10 +961,6 @@ export default {
 
     // 提交商品到后台数据库保存
     saveGoods () {
-      this.tmpFileList.forEach(item => {
-        item.name = '点击预览图片'
-      })
-      this.fileList = this.tmpFileList
       if (this.form.goods_name.trim() === '') {
         return this.$message.error('必须填写商品名称!')
       } else if (this.form.describe.trim() === '') {
@@ -1016,8 +1014,9 @@ export default {
           return this.$message.error('必须要设置商品参数!')
         } else {
           // 整理商品图片列表
+          this.form.img_list = []
           this.fileList.forEach(item => {
-            this.form.img_list.push(item.tmp_path)
+            this.form.img_list.push(item.url)
           })
 
           // 整理价格
@@ -1036,9 +1035,12 @@ export default {
           this.form.parameter.size_and_weight = this.sizeAndWeightParameterList
 
           // 发送保存请求
-          this.$axios.post('/add/goods', this.form).then(res => {
+          this.$axios.post('/edit/goods', {
+            goods_id: this.currentGoodsId,
+            goods_form: this.form
+          }).then(res => {
             if (res.data.meta.status === 200) {
-              this.$message.success('添加商品成功！')
+              this.$message.success('修改商品成功！')
               this.$store.dispatch('getWarningGoodsNumber')
               this.isSubmit = true
               this.$router.push({ name: 'goodslist' })
@@ -1131,6 +1133,11 @@ export default {
         font-family: FZZJ, Georgia, 'Times New Roman', Times, serif;
         margin-bottom: 12px;
       }
+    }
+
+    ul.el-upload-list {
+      width: 60%;
+      max-width: 500px;
     }
   }
 

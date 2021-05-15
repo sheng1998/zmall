@@ -10,6 +10,9 @@ mongoose.connect('mongodb://127.0.0.1:27018/zmall')
 let Goods = require('../models/goods.js')
 let Carousel = require('../models/carousel')
 
+// 商品图片保存地址
+let GOODSIMGPATH = 'uploads/goods/test/'
+
 // 创建路由容器
 let router = express.Router()
 
@@ -130,7 +133,7 @@ router.get('/goods/onsale', (req, res) => {
             .skip(parseInt((page_size - 1) * data_number))
             .limit(parseInt(data_number))
             .sort({
-                goods_id: 1
+                created_time: -1
             })
             .exec().then(data => {
                 res.json({
@@ -179,7 +182,7 @@ router.get('/goods/offsale', (req, res) => {
             .skip(parseInt((page_size - 1) * data_number))
             .limit(parseInt(data_number))
             .sort({
-                goods_id: 1
+                created_time: -1
             })
             .exec().then(data => {
                 res.json({
@@ -203,7 +206,7 @@ router.post('/add/goods', (req, res) => {
     let asyncArray = []
     img_list.forEach((item, index) => {
         let path = item
-        let newPath = `uploads/goods/test/${path.split('\\')[1]}`
+        let newPath = `${GOODSIMGPATH}${path.split('\\')[1]}`
         asyncArray.push(
             new Promise((reslove, reject) => {
                 fs.copyFile(path, `./${newPath}`, err => {
@@ -326,6 +329,67 @@ router.get('/delete/goods', (req, res) => {
     })
 })
 
+// 修改商品信息
+router.post('/edit/goods', (req, res) => {
+    let {
+        goods_id,
+        goods_form
+    } = req.body
+
+    let asyncArray = []
+    goods_form.img_list.forEach((item, index) => {
+        if (item.includes('/tmp_uploads/')) {
+            let path = item.split('http://127.0.0.1:3002/')[1]
+            let newPath = `${GOODSIMGPATH}${item.split('/tmp_uploads/')[1]}`
+            console.log(path, newPath)
+            asyncArray.push(
+                new Promise((reslove, reject) => {
+                    fs.copyFile(path, `./${newPath}`, err => {
+                        if (err) {
+                            reject(err)
+                        } else {
+                            goods_form.img_list[index] = `http://127.0.0.1:3002/${newPath}`
+                            reslove()
+                        }
+                    })
+                })
+            )
+        }
+    })
+
+    Promise.all(asyncArray).then(() => {
+        Goods.findOneAndUpdate({
+            goods_id: Number(goods_id)
+        }, {
+            goods_name: goods_form.goods_name,
+            describe: goods_form.describe,
+            price: Number(goods_form.price),
+            original_price: Number(goods_form.original_price),
+            discount_price: Number(goods_form.discount_price),
+            goods_number: Number(goods_form.goods_number),
+            classification: goods_form.classification,
+            img_list: goods_form.img_list,
+            details: goods_form.details,
+            attribute: goods_form.attribute,
+            parameter: goods_form.parameter,
+            last_modify_time: new Date
+        }).then(() => {
+            res.json({
+                data: {},
+                meta: {
+                    msg: '修改商品成功！',
+                    status: 200
+                }
+            })
+        })
+    })
+
+
+
+
+
+})
+
 // 获取库存预警信息
 router.get('/stockwarning', (req, res) => {
     Goods.find({
@@ -372,7 +436,8 @@ router.get('/stockwarning/goodslist', (req, res) => {
             .skip(parseInt((page_size - 1) * data_number))
             .limit(parseInt(data_number))
             .sort({
-                goods_id: 1
+                goods_number: 1,
+                created_time: -1
             })
             .exec().then(data => {
                 res.json({
