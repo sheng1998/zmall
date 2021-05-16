@@ -14,8 +14,13 @@ let userSchema = new Schema({
         type: String,
         required: true
     },
+    // 名字
+    name: {
+        type: String,
+        default: ''
+    },
     // 电话
-    telephone: {
+    tel: {
         type: String,
         required: true
     },
@@ -23,12 +28,24 @@ let userSchema = new Schema({
     limit: {
         type: Number,
         default: 1,
-        enum: [-1, 0, 1, 2]
+        enum: [-1, 0, 1] // 0 禁止登陆，1 正常用户，-1 禁止评论
+    },
+    email: {
+        type: String,
+        default: ''
     },
     avatar: {
         type: String,
-        required: true,
-        default: '../public/img/userAvatar/avatar1.jpg'
+        default: 'http://127.0.0.1:3002/uploads/user/avatar.jpg'
+    },
+    gender: {
+        type: Number,
+        default: 1,
+        enum: [-1, 1, 0]
+    },
+    address: {
+        type: String,
+        default: ''
     },
     // 创建时间
     created_time: {

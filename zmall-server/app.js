@@ -4,6 +4,7 @@ let path = require('path')
 let express = require('express')
 // 引入 body-parser 包，处理 post 请求的数据
 let bodyParser = require('body-parser')
+const cookieParase = require('cookie-parser')
 
 // 引入路由模块
 let router = require('./routes/index') 
@@ -27,6 +28,7 @@ app.use(bodyParser.urlencoded({
     extended: false
 }))
 app.use(bodyParser.json())
+app.use(cookieParase())
 
 // 把路由模块挂载到 app 服务中
 app.use(router)

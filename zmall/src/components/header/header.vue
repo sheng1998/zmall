@@ -44,7 +44,7 @@
       <!-- 个人中心 -->
       <el-col :span="2" class="to-center login-message" v-if="isLogin">
         <span>
-          <router-link to="personal">个人中心</router-link>
+          <router-link :to="personalUrl">个人中心</router-link>
         </span>
       </el-col>
     </el-row>
@@ -57,16 +57,33 @@ export default {
     return {
       searcVal: '',
       isLogin: false,
-      logo_url: ''
+      logo_url: '',
+      personalUrl: 'personal'
     }
   },
   created () {
+    this.judgingLoginStatus()
     this.$axios.get('/get/logo').then(res => {
       this.logo_url = res.data.data.url
     })
   },
   mounted () {},
-  methods: {}
+  methods: {
+    // 判断登录状态
+    judgingLoginStatus () {
+      let loginInfo = this.$mycookie.get('loginInfo')
+      if (!loginInfo) {
+        return false
+      }
+      let code = JSON.parse(loginInfo).code
+      this.$axios.get('/islogin', { params: { code } }).then(res => {
+        if (res.data.isLogin === true) {
+          this.isLogin = true
+          this.personalUrl = 'personal?userId=' + JSON.parse(loginInfo).user_id
+        }
+      })
+    }
+  }
 }
 </script>
 

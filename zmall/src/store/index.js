@@ -7,15 +7,11 @@ Vue.use(Vuex)
 // 创建VueX对象
 const store = new Vuex.Store({
   state: {
-    loginDiaVisible: false,
-    registerDiaVisible: false
+    isLogin: false
   },
   mutations: {
-    setLoginDiaVisible (state, flag) {
-      state.loginDiaVisible = flag
-    },
-    setRegisterDiaVisible (state, flag) {
-      state.registerDiaVisible = flag
+    setIsLogin (state, flag) {
+      state.isLogin = flag
     }
   }
 })

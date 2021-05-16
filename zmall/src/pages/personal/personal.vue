@@ -14,7 +14,7 @@
         <el-form :model="userinfo" label-width="100px" class="userinfo-form">
           <!-- 当前头像 -->
           <el-form-item label="当前头像" class="avatar">
-            <el-image :src="userinfo.avatar_url"></el-image>
+            <el-image :src="userinfo.avatar"></el-image>
           </el-form-item>
           <!-- 用户名 -->
           <el-form-item label="*用户名" prop="username" class="username">
@@ -30,7 +30,7 @@
           </el-form-item>
 
           <!-- 性别 -->
-          <el-form-item label="*性别" prop="gender" class="gender">
+          <el-form-item label="性别" prop="gender" class="gender">
             <el-radio-group v-model="userinfo.gender">
               <el-radio label="男"></el-radio>
               <el-radio label="女"></el-radio>
@@ -80,15 +80,14 @@ export default {
   data () {
     return {
       userinfo: {
-        username: '小庄',
-        name: '小庄',
-        avatar_url:
-          'https://i0.hdslb.com/bfs/face/edee88230332b2bf939863bcc9beef14b6d1fb48.jpg@128w_128h_1o.webp',
-        gender: '男',
-        email: '18475140601@163.com',
-        tel: '18475140601',
-        addressFront: ['1', '2', '3'],
-        addressAfter: '湖光镇海大路1号广东海洋大学西区海思B220'
+        username: '',
+        name: '',
+        avatar: '',
+        gender: '',
+        email: '',
+        tel: '',
+        addressFront: [],
+        addressAfter: ''
       },
       address: [],
       addressOptions: [
@@ -361,9 +360,28 @@ export default {
       ]
     }
   },
-  created () {},
+  created () {
+    this.getUserInfo()
+  },
   mounted () {},
   methods: {
+    // 获取用户信息
+    getUserInfo () {
+      this.$axios
+        .get('/userinfo', {
+          params: {
+            id: this.$route.query.userId
+          }
+        })
+        .then(res => {
+          console.log(res.data.userinfo)
+          let userinfo = res.data.userinfo
+          userinfo.gender =
+            userinfo.gender === 1 ? '男' : userinfo.gender === 0 ? '女' : ''
+          this.userinfo = userinfo
+        })
+    },
+
     handleChange () {
       console.log(this.address)
     }
