@@ -1,5 +1,9 @@
 <template>
   <div class="login xmf-flex">
+    <!-- 返回首页 -->
+    <xmf-to-home></xmf-to-home>
+
+    <!-- 登录区域 -->
     <el-card class="login-card">
       <div class="top">
         <div class="login-img">
@@ -20,7 +24,7 @@
               v-model="form.username"
               clearable
               required
-              maxlength="10"
+              maxlength="12"
               placeholder="请输入用户名/手机号码"
             ></el-input>
           </el-form-item>
@@ -45,10 +49,7 @@
               placeholder="验证码"
             ></el-input>
             <div class="code-contain" @click="getCode">
-              <el-image
-                fit="cover"
-                :src="codeImgUrl"
-              ></el-image>
+              <el-image fit="cover" :src="codeImgUrl" @load="yzm"></el-image>
             </div>
           </el-form-item>
         </el-form>
@@ -68,12 +69,13 @@
 </template>
 
 <script>
+import xmfToHome from '../../components/toHome/toHome'
 export default {
   data () {
     return {
       form: {
         username: '小庄',
-        password: 'zzsxmf1998',
+        password: '123456aaa',
         code: ''
       },
       codeImgUrl: 'http://127.0.0.1:3002/api/private/get/identifying-code'
@@ -81,9 +83,13 @@ export default {
   },
   created () {
     this.getCode()
-    // console.log(this.$mycookie.set('captcha', '1111111'))
   },
   mounted () {},
+
+  components: {
+    xmfToHome
+  },
+
   methods: {
     // 去登录
     toLogin () {
@@ -94,6 +100,12 @@ export default {
       } else if (this.form.code.trim() === '') {
         this.$message.error('请填写验证码！')
       } else {
+        let yzm = this.$mycookie.get('captcha')
+        if (this.form.code !== yzm) {
+          this.$message.error('验证码错误！')
+          this.getCode()
+          return
+        }
         this.$axios.post('/login', this.form).then(res => {
           let {
             data,
@@ -106,7 +118,11 @@ export default {
               JSON.stringify(data.loginInfo),
               3 * 60 * 60
             )
-            this.$message.success('登录成功，自动跳转至首页页面。')
+            this.$message({
+              type: 'success',
+              message: '登录成功，自动跳转至首页。',
+              offset: 80
+            })
             this.$router.push({ name: 'home' })
           } else {
             this.$message.error(msg)
@@ -120,6 +136,12 @@ export default {
     getCode () {
       this.codeImgUrl =
         'http://127.0.0.1:3002/api/private/get/identifying-code?' + new Date()
+    },
+
+    yzm () {
+      this.$axios.get('/yzm').then(res => {
+        this.$mycookie.set('captcha', res.data.yzm)
+      })
     }
   }
 }

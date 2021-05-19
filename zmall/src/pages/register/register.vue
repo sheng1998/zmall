@@ -16,7 +16,7 @@
             class="item"
             v-model="form.username"
             clearable
-            maxlength="10"
+            maxlength="12"
             required
             prefix-icon="iconfont iconyonghuming"
             placeholder="用户名"
@@ -72,6 +72,7 @@
               <el-image
                 fit="cover"
                 :src="codeImgUrl"
+                @load="yzm"
               ></el-image>
             </div>
           </div>
@@ -126,6 +127,12 @@ export default {
       } else if (this.form.code.trim() === '') {
         this.$message.error('请输入验证码！')
       } else {
+        let yzm = this.$mycookie.get('captcha')
+        if (this.form.code !== yzm) {
+          this.$message.error('验证码错误！')
+          this.getCode()
+          return
+        }
         // 这里应该写校验信息的，可以减少后台请求，降低服务器压力
         // 但是后台也写好了，这里为了减少代码了所以没写
         this.$axios.post('/register', this.form).then(res => {
@@ -148,6 +155,12 @@ export default {
     getCode () {
       this.codeImgUrl =
         'http://127.0.0.1:3002/api/private/get/identifying-code?' + new Date()
+    },
+
+    yzm () {
+      this.$axios.get('/yzm').then(res => {
+        this.$mycookie.set('captcha', res.data.yzm)
+      })
     }
   }
 }

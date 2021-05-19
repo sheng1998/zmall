@@ -29,23 +29,30 @@
           </div>
         </div>
 
-        <div class="seckill-item" v-for="(item, index) in 5" :key="index">
+        <div
+          class="seckill-item"
+          v-for="goods in goods_list"
+          :key="goods.img_list[0]"
+        >
           <div class="item-img xmf-flex">
-            <el-image
-              src="http://img30.360buyimg.com/seckillcms/s140x140_jfs/t1/193934/12/573/195753/608b676cEed33c355/ec4e0f561bd4358d.jpg"
-              alt=""
-              fit="cover "
-            >
-            </el-image>
+            <el-image :src="goods.img_list[0]" alt="" fit="cover "> </el-image>
           </div>
           <div class="item-title xmf-flex">
-            <div class="ellipsis">这是标题这是标题这是标题这是标题</div>
+            <div class="ellipsis goods-name">
+              {{ goods.goods_name }}
+            </div>
           </div>
           <div class="item-price xmf-flex">
             <div class="col">
-              <div class="discount-price xmf-flex"><small>￥</small>3001.00</div>
+              <div class="discount-price xmf-flex">
+                <small>￥</small>
+                {{ goods.discount_price | fmtAmount }}
+              </div>
               <div class="sanjiaoxing"></div>
-              <div class="original-price xmf-flex"><small>￥</small>3461.00</div>
+              <div class="original-price xmf-flex">
+                <small>￥</small>
+                {{ goods.original_price | fmtAmount }}
+              </div>
             </div>
           </div>
         </div>
@@ -62,7 +69,50 @@ export default {
       session: '00',
       hour: '00',
       minutes: '00',
-      seconds: '00'
+      seconds: '00',
+      goods_list: [
+        {
+          img_list: [
+            'https://cdn.cnbj1.fds.api.mi-img.com/mi-mall/d47f7ecaa04d92bf2790d4a5d53d9099.png'
+          ],
+          goods_name: '黑鲨4 Pro',
+          describe: '黑鲨4 Pro',
+          discount_price: 3999.00,
+          original_price: 4299.00
+        },
+        {
+          img_list: [
+            'https://cdn.cnbj1.fds.api.mi-img.com/mi-mall/5dc32ec73299ff79556dcd1cf0f0ac11.png'
+          ],
+          goods_name: '小米MIX FOLD',
+          discount_price: 9999.00,
+          original_price: 12999.00
+        },
+        {
+          img_list: [
+            'https://img10.360buyimg.com/seckillcms/s140x140_jfs/t1/118359/10/13035/109345/5f19212fEcc883606/dad5bc98e4609d73.jpg.webp'
+          ],
+          goods_name: 'ROG游戏手机3精英版ROG游戏手机3精英版ROG游戏手机3精英版ROG游戏手机3精英版ROG游戏手机3精英版ROG游戏手机3精英版ROG游戏手机3精英版',
+          discount_price: 3499.00,
+          original_price: 3999.00
+        },
+        {
+          img_list: [
+            'https://res4.vmallres.com/shopdc/pic/2021131/e3789a65-97a9-45a3-89cb-7cbc19197115.png'
+          ],
+          goods_name: 'FreeBuds Pro 无线耳机',
+          discount_price: 1099.00,
+          original_price: 1299.00
+        },
+        {
+          img_list: [
+            'https://res0.vmallres.com/shopdc/pic/2021312/7160b876-baa7-4238-b0f7-ed278cdc2650.png'
+          ],
+          goods_name: '超感知徕卡电影影像',
+          discount_price: 6499.00,
+          original_price: 7199.00
+        }
+      ]
     }
   },
   created () {
@@ -146,20 +196,20 @@ export default {
           margin-right: 15px;
         }
 
-        // .item-img {
-        //   img {
-        //     width: 140px;
-        //     height: 140px;
-        //   }
-        // }
+        .item-img {
+          img {
+            width: 140px;
+            height: 140px;
+          }
+        }
 
         .item-title {
           height: 50px;
           font-size: 14px;
 
-          div {
+          .goods-name {
             width: 160px;
-            overflow: hidden;
+            text-align: center;
           }
         }
 

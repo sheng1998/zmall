@@ -30,7 +30,7 @@ MyCookie.install = function (Vue) {
    * [removeCookie 移除cookie]
    */
   mycookie.remove = function removeCookie (key) {
-    mycookie.setCookie(key, '', -1) // 把cookie设置为过期
+    mycookie.set(key, '', -1) // 把cookie设置为过期
   }
 
   Vue.prototype.$mycookie = mycookie

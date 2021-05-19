@@ -3,7 +3,11 @@
     <el-row style="height: 100%;">
       <!-- 商城图标 -->
       <el-col :span="5" class="my-home-logo xmf-flex">
-        <img :src="logo_url" alt="" />
+        <el-avatar :size="40" :src="logo_url">
+          <img
+            src="http://127.0.0.1:3002/uploads/user/error-avatar/0fc7d20532fdaf769a25683617711.png"
+          />
+        </el-avatar>
       </el-col>
 
       <!-- 商城名字 -->
@@ -12,7 +16,7 @@
       </el-col>
 
       <!-- 搜索框 -->
-      <el-col :offset="5" :span="8">
+      <el-col :offset="7" :span="8">
         <div class="search">
           <el-input
             placeholder="Search"
@@ -24,14 +28,6 @@
         </div>
       </el-col>
 
-      <!-- 位置 -->
-      <el-col :span="2" class="to-center">
-        <span style="margin-right: 5px;">
-          <i class="el-icon-location"></i>
-        </span>
-        <span class="ellipsis">位置信息位置信息位置信息位置信息</span>
-      </el-col>
-
       <!-- 登录注册 -->
       <el-col :span="2" class="to-center login-message" v-if="!isLogin">
         <div>
@@ -41,11 +37,27 @@
         </div>
       </el-col>
 
-      <!-- 个人中心 -->
-      <el-col :span="2" class="to-center login-message" v-if="isLogin">
-        <span>
-          <router-link :to="personalUrl">个人中心</router-link>
-        </span>
+      <!-- 头像 -->
+      <el-col
+        :span="2"
+        class="to-center login-message my-avatar"
+        v-if="isLogin"
+      >
+        <el-dropdown>
+          <el-avatar :size="40" :src="user_avatar">
+            <img
+              src="http://127.0.0.1:3002/uploads/user/error-avatar/0fc7d20532fdaf769a25683617711.png"
+            />
+          </el-avatar>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item>
+              <router-link :to="personalUrl">个人中心</router-link>
+            </el-dropdown-item>
+            <el-dropdown-item>
+              <div @click="logout">退出登录</div>
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
       </el-col>
     </el-row>
   </el-header>
@@ -58,30 +70,63 @@ export default {
       searcVal: '',
       isLogin: false,
       logo_url: '',
-      personalUrl: 'personal'
+      personalUrl: '/personal',
+      user_id: '',
+      user_avatar: ''
     }
   },
+
   created () {
     this.judgingLoginStatus()
     this.$axios.get('/get/logo').then(res => {
       this.logo_url = res.data.data.url
     })
   },
+
   mounted () {},
+
   methods: {
     // 判断登录状态
     judgingLoginStatus () {
       let loginInfo = this.$mycookie.get('loginInfo')
       if (!loginInfo) {
+        this.isLogin = false
         return false
       }
       let code = JSON.parse(loginInfo).code
       this.$axios.get('/islogin', { params: { code } }).then(res => {
         if (res.data.isLogin === true) {
           this.isLogin = true
-          this.personalUrl = 'personal?userId=' + JSON.parse(loginInfo).user_id
+          this.user_id = JSON.parse(loginInfo).user_id
+          this.personalUrl = '/personal?userId=' + this.user_id
+          this.getUserAvater()
         }
       })
+    },
+
+    // 根据用户id查询用户头像
+    getUserAvater () {
+      // console.log('avater')
+      this.$axios
+        .get('/userinfo', {
+          params: {
+            id: this.user_id
+          }
+        })
+        .then(res => {
+          this.user_avatar = res.data.userinfo.avatar
+        })
+    },
+
+    // 退出登录
+    logout () {
+      this.$mycookie.remove('loginInfo')
+      this.$message({
+        type: 'success',
+        message: '退出登录成功，自动跳转至登录页面。',
+        offset: 80
+      })
+      this.$router.push({name: 'login'})
     }
   }
 }
@@ -104,12 +149,15 @@ export default {
   .my-home-logo {
     width: 40px;
     height: 50px;
-    border-radius: 10px;
 
-    img {
-      width: 35px;
-      height: 35px;
-      border-radius: 50%;
+    .el-avatar {
+      background-color: transparent;
+    }
+  }
+
+  .my-avatar {
+    .el-avatar {
+      background-color: transparent;
     }
   }
 
@@ -139,6 +187,20 @@ export default {
   .login-message {
     text-align: right;
     margin-left: 10px;
+  }
+}
+
+.el-dropdown-menu {
+  a {
+    font-size: 14px;
+    color: #606266;
+    cursor: pointer;
+  }
+
+  .el-dropdown-menu__item {
+    &:hover a {
+      color: #409eff;
+    }
   }
 }
 </style>

@@ -153,49 +153,49 @@ export default {
         {
           goods_info: {
             img:
-              'https://img.alicdn.com/bao/uploaded/i4/1071273746/O1CN01gOaT7E1dXiFRCyajb_!!1071273746.jpg_80x80.jpg',
-            name: '小西瓜种子种籽黄心黄瓤阳台四季盆栽无籽孑南方嫁接麒麟8424苗秧'
+              'https://cdn.cnbj1.fds.api.mi-img.com/mi-mall/d47f7ecaa04d92bf2790d4a5d53d9099.png',
+            name: '黑鲨4 Pro'
           },
-          price: 12.1,
-          discount_price: 12.1,
-          original_price: 12.1,
-          number: 1
+          price: 4299.00,
+          discount_price: 4299.00,
+          original_price: 4599.00,
+          number: 2
         },
         {
           goods_info: {
             img:
-              'https://img.alicdn.com/bao/uploaded/i2/2978398582/O1CN01Jt84H82DGbge9vArJ_!!2978398582.jpg_80x80.jpg',
-            name: '中国香港港版港货黄道益活络油原装代购正品跌打损伤舒筋活络50ml'
+              'https://res.vmallres.com/pimages//product/6901443321209/800_800_03E36F3811C5C3E97E89CB7C6CD937E843B234BADFEE705Fmp.png',
+            name: '华为平板 M5 青春版 8.0英寸智能平板电脑 4GB+64GB 全网通版（香槟金）智慧语音声控学生平板 麒麟710芯片 哈曼卡顿调音 多重护眼儿童学习平板'
           },
-          price: 75.0,
-          discount_price: 75.0,
-          original_price: 128.0,
+          price: 1599.00,
+          discount_price: 1599.00,
+          original_price: 1599.00,
           number: 1,
-          total_price: 75.0
+          total_price: 1599.00
         },
         {
           goods_info: {
             img:
-              'https://img.alicdn.com/bao/uploaded/i2/2978398582/O1CN01Jt84H82DGbge9vArJ_!!2978398582.jpg_80x80.jpg',
-            name: '中国香港港版港货黄道益活络油原装代购正品跌打损伤舒筋活络50ml'
+              'https://res1.vmallres.com/shopdc/pic/2021319/c27a2a46-e02b-4988-af59-e4796534331e.png',
+            name: 'HUAWEI Mate 40'
           },
-          price: 75.0,
-          discount_price: 75.0,
-          original_price: 128.0,
+          price: 4999.00,
+          discount_price: 4999.00,
+          original_price: 4999.00,
           number: 1,
-          total_price: 75.0
+          total_price: 4999.00
         },
         {
           goods_info: {
             img:
-              'https://img.alicdn.com/bao/uploaded/i2/2978398582/O1CN01Jt84H82DGbge9vArJ_!!2978398582.jpg_80x80.jpg',
-            name: '中国香港港版港货黄道益活络油原装代购正品跌打损伤舒筋活络50ml'
+              'https://res8.vmallres.com/pimages//product/6901443408214/428_428_4CDF61F5D70716D92BCDFAA236450E7AC59DF6FDF73A6343mp.png',
+            name: 'HUAWEI MateBook D 15'
           },
-          price: 75.0,
-          discount_price: 75.0,
-          original_price: 128.0,
+          price: 4199.00,
+          discount_price: 4199.00,
+          original_price: 4399.00,
           number: 1,
-          total_price: 75.0
+          total_price: 4199.00
         },
         {
           goods_info: {

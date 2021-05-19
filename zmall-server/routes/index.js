@@ -25,12 +25,23 @@ let SECRECYSTRING = 'if("xmf"==="xmf"){console.log("this is the xmf-server!")}'
 // 处理跨域请求
 router.all("*", function (req, res, next) {
     //设置允许跨域的域名，*代表允许任意域名跨域
-    res.header("Access-Control-Allow-Origin", "*");
+    // res.header("Access-Control-Allow-Origin", "http://localhost:8888");
+
+    // 允许多个域名跨域
+    const originList = [
+        'http://localhost:8888',
+        'http://127.0.0.1:8888',
+        'http://127.0.0.1:8886'
+    ]
+    if (req.headers.origin && originList.includes(req.headers.origin.toLocaleLowerCase())) {
+        res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
+    }
+
     //允许的header类型
     res.header("Access-Control-Allow-Headers", "Origin,X-Requested-With,Content-Type,Accept");
     //跨域允许的请求方式
     res.header("Access-Control-Allow-Methods", "DELETE,PUT,POST,GET,OPTIONS");
-    // res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Credentials', 'true');
     next();
 })
 
@@ -109,29 +120,28 @@ router.get('/api/private/get/identifying-code', (req, res) => {
     // console.log(req.session) //生成的验证码
     IDENTIFYINGCODE = req.session //生成的验证码
 
-    res.cookie('captcha', IDENTIFYINGCODE) //保存到cookie 方便前端调用验证
+    res.cookie('captcha', IDENTIFYINGCODE, {
+        maxAge: 60000,
+        httpOnly: true
+    }) //保存到cookie 方便前端调用验证
     res.setHeader('Content-Type', 'image/svg+xml')
     res.write(String(captcha.data))
     res.end()
+})
+
+router.get('/api/private/yzm', (req, res) => {
+    res.json({
+        yzm: IDENTIFYINGCODE
+    })
 })
 
 // 处理前端登录请求
 router.post('/api/private/login', (req, res) => {
     let {
         username,
-        password,
-        code
+        password
     } = req.body
     password = md5(md5(password + SECRECYSTRING) + SECRECYSTRING)
-    if (code !== IDENTIFYINGCODE) {
-        return res.json({
-            data: {},
-            meta: {
-                msg: '验证码错误！',
-                status: 201
-            }
-        })
-    }
     if (username[0] !== '1') {
         User.findOne({
             username: username
@@ -244,7 +254,7 @@ router.post('/api/private/login', (req, res) => {
 // let reg = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/
 
 
-// 处理前端注册请求
+// 处理注册请求
 router.post('/api/private/register', (req, res) => {
     let {
         username,
@@ -288,11 +298,11 @@ router.post('/api/private/register', (req, res) => {
                 status: 201
             }
         })
-    } else if (username.length > 10) {
+    } else if (username.length > 12) {
         res.json({
             data: {},
             meta: {
-                msg: '注册失败，用户名太长,要10字以内！',
+                msg: '注册失败，用户名太长,要12字以内！',
                 status: 201
             }
         })

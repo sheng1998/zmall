@@ -67,7 +67,7 @@
             </div>
 
             <!-- 实际付款 -->
-            <div class="total_price xmf-flex">{{ order.total_price }} 元</div>
+            <div class="total_price xmf-flex">{{ order.total_price | fmtAmount }} 元</div>
 
             <!-- 操作 -->
             <div class="operation xmf-flex">
@@ -88,7 +88,7 @@
     </div>
 
     <!-- 分页 -->
-    <div class="fenye xmf-flex" v-if="orderList.length > 0">
+    <div class="fenye xmf-flex" v-if="orderList.length > 5">
       <el-pagination
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
@@ -112,147 +112,39 @@ export default {
       orderList: [
         {
           order_id: '1283605970670855585',
-          created_time: '2021-04-22 12:30:22',
+          created_time: '2021-05-10 12:30:22',
           goods_info: {
             img:
-              'https://img.alicdn.com/bao/uploaded/i4/1071273746/O1CN01gOaT7E1dXiFRCyajb_!!1071273746.jpg_80x80.jpg',
+              'https://res8.vmallres.com/shopdcGray/shopdc/pic/7684c590-be75-4cac-bdb1-74d167f6a728.png',
             name:
-              '小西瓜种子种籽黄心黄瓤阳台四季盆栽无籽孑南方嫁接麒麟8424苗秧',
-            attributes: '我是属性'
+              'HUAWEI FreeBuds 3 无线耳机（陶瓷白）麒麟A1芯片 主动降噪 快充长续航',
+            attributes: '陶瓷白/有线充版'
           },
-          price: 12.1,
-          discount_price: 12.1,
-          original_price: 12.1,
-          number: 2,
-          total_price: 24.2,
+          price: 899.00,
+          discount_price: 899.00,
+          original_price: 899.00,
+          number: 1,
+          total_price: 899.00,
           order_time: '2021-02-10 13:12:09',
           order_number: '1293678699427855585'
         },
         {
-          order_id: '1270648131388855585',
+          order_id: '5270648131388855585',
           created_time: '2021-04-25 20:10:12',
           goods_info: {
             img:
-              'https://img.alicdn.com/bao/uploaded/i2/2978398582/O1CN01Jt84H82DGbge9vArJ_!!2978398582.jpg_80x80.jpg',
+              'https://cdn.cnbj1.fds.api.mi-img.com/mi-mall/d47f7ecaa04d92bf2790d4a5d53d9099.png',
             name:
-              '中国香港港版港货黄道益活络油原装代购正品跌打损伤舒筋活络50ml',
-            attributes: '我是属性'
+              '黑鲨4 Pro',
+            attributes: '8+256GB/墨海黑'
           },
-          price: 75.0,
-          discount_price: 75.0,
-          original_price: 128.0,
+          price: 4299.00,
+          discount_price: 4299.00,
+          original_price: 4599.00,
           number: 1,
-          total_price: 75.0,
-          order_time: '2021-02-10 13:12:09',
-          order_number: '88293678699427855585'
-        },
-        {
-          order_id: '1270648131388855585',
-          created_time: '2021-04-25 20:10:12',
-          goods_info: {
-            img:
-              'https://img.alicdn.com/bao/uploaded/i2/2978398582/O1CN01Jt84H82DGbge9vArJ_!!2978398582.jpg_80x80.jpg',
-            name:
-              '中国香港港版港货黄道益活络油原装代购正品跌打损伤舒筋活络50ml',
-            attributes: '我是属性'
-          },
-          price: 75.0,
-          discount_price: 75.0,
-          original_price: 128.0,
-          number: 1,
-          total_price: 75.0,
-          order_time: '2021-02-10 13:12:09',
-          order_number: '88293678699427855585'
-        },
-        {
-          order_id: '1270648131388855585',
-          created_time: '2021-04-25 20:10:12',
-          goods_info: {
-            img:
-              'https://img.alicdn.com/bao/uploaded/i2/2978398582/O1CN01Jt84H82DGbge9vArJ_!!2978398582.jpg_80x80.jpg',
-            name:
-              '中国香港港版港货黄道益活络油原装代购正品跌打损伤舒筋活络50ml',
-            attributes: '我是属性'
-          },
-          price: 75.0,
-          discount_price: 75.0,
-          original_price: 128.0,
-          number: 1,
-          total_price: 75.0,
-          order_time: '2021-02-10 13:12:09',
-          order_number: '88293678699427855585'
-        },
-        {
-          order_id: '1270648131388855585',
-          created_time: '2021-04-25 20:10:12',
-          goods_info: {
-            img:
-              'https://img.alicdn.com/bao/uploaded/i2/2978398582/O1CN01Jt84H82DGbge9vArJ_!!2978398582.jpg_80x80.jpg',
-            name:
-              '中国香港港版港货黄道益活络油原装代购正品跌打损伤舒筋活络50ml',
-            attributes: '我是属性'
-          },
-          price: 75.0,
-          discount_price: 75.0,
-          original_price: 128.0,
-          number: 1,
-          total_price: 75.0,
-          order_time: '2021-02-10 13:12:09',
-          order_number: '88293678699427855585'
-        },
-        {
-          order_id: '1270648131388855585',
-          created_time: '2021-04-25 20:10:12',
-          goods_info: {
-            img:
-              'https://img.alicdn.com/bao/uploaded/i2/2978398582/O1CN01Jt84H82DGbge9vArJ_!!2978398582.jpg_80x80.jpg',
-            name:
-              '中国香港港版港货黄道益活络油原装代购正品跌打损伤舒筋活络50ml',
-            attributes: '我是属性'
-          },
-          price: 75.0,
-          discount_price: 75.0,
-          original_price: 128.0,
-          number: 1,
-          total_price: 75.0,
-          order_time: '2021-02-10 13:12:09',
-          order_number: '88293678699427855585'
-        },
-        {
-          order_id: '1270648131388855585',
-          created_time: '2021-04-25 20:10:12',
-          goods_info: {
-            img:
-              'https://img.alicdn.com/bao/uploaded/i2/2978398582/O1CN01Jt84H82DGbge9vArJ_!!2978398582.jpg_80x80.jpg',
-            name:
-              '中国香港港版港货黄道益活络油原装代购正品跌打损伤舒筋活络50ml',
-            attributes: '我是属性'
-          },
-          price: 75.0,
-          discount_price: 75.0,
-          original_price: 128.0,
-          number: 1,
-          total_price: 75.0,
-          order_time: '2021-02-10 13:12:09',
-          order_number: '88293678699427855585'
-        },
-        {
-          order_id: '1270648131388855585',
-          created_time: '2021-04-25 20:10:12',
-          goods_info: {
-            img:
-              'https://img.alicdn.com/bao/uploaded/i2/2978398582/O1CN01Jt84H82DGbge9vArJ_!!2978398582.jpg_80x80.jpg',
-            name:
-              '中国香港港版港货黄道益活络油原装代购正品跌打损伤舒筋活络50ml',
-            attributes: '我是属性'
-          },
-          price: 75.0,
-          discount_price: 75.0,
-          original_price: 128.0,
-          number: 1,
-          total_price: 75.0,
-          order_time: '2021-02-10 13:12:09',
-          order_number: '88293678699427855585'
+          total_price: 4299.00,
+          order_time: '2021-05-10 11:34:23',
+          order_number: '58293678699427855585'
         }
       ],
       currentPage: 1

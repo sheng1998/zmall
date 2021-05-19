@@ -1,5 +1,6 @@
 <template>
   <div class="stock-warning">
+    <div class="xmf-system-flex fzzj">库存预警</div>
     <el-table :data="goodsList" stripe style="width: 100%" border>
       <!-- 名称 -->
       <el-table-column prop="goods_name" label="名称" align="center" sortable>
@@ -31,16 +32,6 @@
       <el-table-column
         prop="goods_number"
         label="库存"
-        width="100"
-        sortable
-        align="center"
-      >
-      </el-table-column>
-
-      <!-- 月销 -->
-      <el-table-column
-        prop="monthly_sales"
-        label="月销量"
         width="100"
         sortable
         align="center"

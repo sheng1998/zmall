@@ -32,6 +32,7 @@
           <!-- 性别 -->
           <el-form-item label="性别" prop="gender" class="gender">
             <el-radio-group v-model="userinfo.gender">
+              <el-radio label="未知"></el-radio>
               <el-radio label="男"></el-radio>
               <el-radio label="女"></el-radio>
             </el-radio-group>
@@ -376,8 +377,6 @@ export default {
         .then(res => {
           console.log(res.data.userinfo)
           let userinfo = res.data.userinfo
-          userinfo.gender =
-            userinfo.gender === 1 ? '男' : userinfo.gender === 0 ? '女' : ''
           this.userinfo = userinfo
         })
     },

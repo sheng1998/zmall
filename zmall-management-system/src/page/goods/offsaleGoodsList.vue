@@ -57,16 +57,6 @@
         >
         </el-table-column>
 
-        <!-- 月销 -->
-        <el-table-column
-          prop="monthly_sales"
-          label="月销量"
-          width="100"
-          sortable
-          align="center"
-        >
-        </el-table-column>
-
         <!-- 总销量 -->
         <el-table-column
           prop="total_sales"

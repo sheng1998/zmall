@@ -39,9 +39,9 @@ let userSchema = new Schema({
         default: 'http://127.0.0.1:3002/uploads/user/avatar.jpg'
     },
     gender: {
-        type: Number,
-        default: 1,
-        enum: [-1, 1, 0]
+        type: String,
+        default: '未知',
+        enum: ['未知', '男', '女']
     },
     address: {
         type: String,

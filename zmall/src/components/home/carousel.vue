@@ -3,7 +3,9 @@
     <!-- 轮播图 -->
     <el-carousel class="carousel" height="400px" :interval="5000">
       <el-carousel-item v-for="item in carouselList" :key="item._id" class="carousel-item">
-        <el-image :src="item.carousel_url"></el-image>
+        <router-link to="/goods/details">
+          <el-image :src="item.carousel_url"></el-image>
+        </router-link>
       </el-carousel-item>
     </el-carousel>
   </div>
@@ -19,6 +21,7 @@ export default {
   created () {
     this.$axios.get('/carousel').then(res => {
       this.carouselList = res.data.data.carouselList
+      console.log(this.carouselList)
     })
   },
   mounted () {},
