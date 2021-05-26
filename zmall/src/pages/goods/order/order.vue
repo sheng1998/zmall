@@ -150,7 +150,16 @@ export default {
       currentPage: 1
     }
   },
-  created () {},
+  created () {
+    let userId = this.$route.query.userId
+    let loginInfo = this.$mycookie.get('loginInfo')
+    if (loginInfo && JSON.parse(loginInfo).user_id === userId) {
+      console.log(1)
+    } else {
+      this.$message.warning('登录信息过期，或用户不存在！')
+      this.$router.replace({path: '/404'})
+    }
+  },
   mounted () {},
   methods: {
     // 删除订单

@@ -10,6 +10,10 @@ let orderSchema = new Schema({
         required: true
     },
     goods_id: {
+        type: Number,
+        required: true
+    },
+    user_id: {
         type: String,
         required: true
     },
@@ -74,4 +78,4 @@ let orderSchema = new Schema({
     }
 })
 
-module.exports = mongoose.model('Attribute', attributeSchema)
+module.exports = mongoose.model('Order', orderSchema)

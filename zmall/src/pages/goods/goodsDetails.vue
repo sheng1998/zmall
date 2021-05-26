@@ -100,19 +100,20 @@
     <div class="goods-details-main">
       <div class="goods-details-nav">
         <el-menu
-          default-active="main"
+          :default-active="$route.path"
           class="el-menu-demo xmf-flex-justify-content-center"
           mode="horizontal"
-          :router="true"
         >
           <!-- 商品详情 -->
-          <el-menu-item index="/goods/details/main">商品详情</el-menu-item>
+          <el-menu-item index="/goods/details/main" @click="toGoodsOther('main')">商品详情</el-menu-item>
 
           <!-- 规格参数 -->
-          <el-menu-item index="/goods/details/parameter">规格参数</el-menu-item>
+          <el-menu-item index="/goods/details/parameter" @click="toGoodsOther('parameter')"
+            >商品参数</el-menu-item
+          >
 
           <!-- 用户评论 -->
-          <el-menu-item index="/goods/details/comment">用户评论</el-menu-item>
+          <el-menu-item index="/goods/details/comment" @click="toGoodsOther('comment')">商品评论</el-menu-item>
         </el-menu>
       </div>
       <div class="goods-details-content">
@@ -215,6 +216,15 @@ export default {
       })
       this.checkboxGroup.push(name1 + '--' + name2)
       console.log(this.checkboxGroup)
+    },
+
+    // 前往其他页面
+    toGoodsOther (order) {
+      if (this.$route.path !== `/goods/details/${order}`) {
+        this.$router.replace({
+          path: `/goods/details/${order}?goodsId=${this.$route.query.goodsId}`
+        })
+      }
     }
   },
   components: {

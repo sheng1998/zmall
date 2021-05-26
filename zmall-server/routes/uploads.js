@@ -22,7 +22,7 @@ let router = express.Router()
 let storage = multer.diskStorage({
     destination: function (req, file, cb) {
         let filePath = `./tmp_uploads`
-        fs.mkdir(filePath, {
+        fs.mkdir(filePath, { // 创建目录
             recursive: true
         }, err => {
             if (err) {
@@ -33,13 +33,37 @@ let storage = multer.diskStorage({
         })
     },
     filename: function (req, file, cb) {
-        let ext = path.parse(file.originalname).ext
-        fileName = uuid.v1().split('-').join('') + ext
+        let ext = path.parse(file.originalname).ext //获取文件后缀
+        fileName = uuid.v1().split('-').join('') + ext // 用uuid生成一个不重复的id作为文件名
         cb(null, fileName); // 指定文件保存的文件名
     }
 })
 let upload = multer({
-    storage: storage
+    storage: storage // 挂在配置
+})
+
+// 配置文件信息
+let storage2 = multer.diskStorage({
+    destination: function (req, file, cb) {
+        let filePath = `./uploads/user`
+        fs.mkdir(filePath, { // 创建目录
+            recursive: true
+        }, err => {
+            if (err) {
+                throw err
+            } else {
+                cb(null, filePath); // 指定文件保存的路径
+            }
+        })
+    },
+    filename: function (req, file, cb) {
+        let ext = path.parse(file.originalname).ext //获取文件后缀
+        fileName = uuid.v1().split('-').join('') + ext // 用uuid生成一个不重复的id作为文件名
+        cb(null, fileName); // 指定文件保存的文件名
+    }
+})
+let upload2 = multer({
+    storage: storage2 // 挂在配置
 })
 
 // 处理跨域请求
@@ -64,6 +88,16 @@ router.post('/uploads', upload.single('file'), (req, res, next) => {
             "msg": "上传成功",
             "status": 200
         }
+    })
+    next()
+})
+
+// 处理用户头像上传请求
+router.post('/uploads/useravatar', upload2.single('file'), (req, res, next) => {
+    res.json({
+        url: `http://127.0.0.1:3002/uploads/user/${req.file.filename}`,
+        msg: "上传成功",
+        status: 200
     })
     next()
 })

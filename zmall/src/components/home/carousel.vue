@@ -3,7 +3,7 @@
     <!-- 轮播图 -->
     <el-carousel class="carousel" height="400px" :interval="5000">
       <el-carousel-item v-for="item in carouselList" :key="item._id" class="carousel-item">
-        <router-link to="/goods/details">
+        <router-link :to="'/goods/details?goodsId=' + item.goods_id">
           <el-image :src="item.carousel_url"></el-image>
         </router-link>
       </el-carousel-item>

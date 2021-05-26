@@ -43,14 +43,17 @@ let userSchema = new Schema({
         default: '未知',
         enum: ['未知', '男', '女']
     },
-    address: {
-        type: String,
-        default: ''
-    },
     // 创建时间
     created_time: {
         type: Date,
         default: Date.now
+    },
+    balance: {
+        type: Number,
+        default: 0
+    },
+    default_delivery_address_id: {
+        type: String
     }
 })
 

@@ -43,15 +43,18 @@
         class="to-center login-message my-avatar"
         v-if="isLogin"
       >
-        <el-dropdown>
+        <el-dropdown :hide-on-click="false">
           <el-avatar :size="40" :src="user_avatar">
             <img
               src="http://127.0.0.1:3002/uploads/user/error-avatar/0fc7d20532fdaf769a25683617711.png"
             />
           </el-avatar>
-          <el-dropdown-menu slot="dropdown">
+          <el-dropdown-menu slot="dropdown" class="my-dropdown">
             <el-dropdown-item>
               <router-link :to="personalUrl">个人中心</router-link>
+            </el-dropdown-item>
+            <el-dropdown-item>
+              <router-link :to="orderUrl">我的订单</router-link>
             </el-dropdown-item>
             <el-dropdown-item>
               <div @click="logout">退出登录</div>
@@ -70,7 +73,8 @@ export default {
       searcVal: '',
       isLogin: false,
       logo_url: '',
-      personalUrl: '/personal',
+      personalUrl: '',
+      orderUrl: '',
       user_id: '',
       user_avatar: ''
     }
@@ -99,7 +103,12 @@ export default {
           this.isLogin = true
           this.user_id = JSON.parse(loginInfo).user_id
           this.personalUrl = '/personal?userId=' + this.user_id
+          this.orderUrl = '/goods/order?userId=' + this.user_id
           this.getUserAvater()
+        } else {
+          this.isLogin = false
+          this.user_id = ''
+          this.personalUrl = ''
         }
       })
     },
@@ -126,7 +135,7 @@ export default {
         message: '退出登录成功，自动跳转至登录页面。',
         offset: 80
       })
-      this.$router.push({name: 'login'})
+      this.$router.push({ name: 'login' })
     }
   }
 }
@@ -200,6 +209,24 @@ export default {
   .el-dropdown-menu__item {
     &:hover a {
       color: #409eff;
+    }
+  }
+}
+
+.my-dropdown {
+  .el-dropdown-menu__item {
+    padding: 0;
+
+    a {
+      display: inline-block;
+      padding: 0 20px;
+      margin: 0;
+    }
+
+    div {
+      display: inline-block;
+      padding: 0 20px;
+      margin: 0;
     }
   }
 }

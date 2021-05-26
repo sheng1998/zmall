@@ -74,3 +74,11 @@
   margin-bottom: 20px;
   font-family: FZZJ, Georgia, 'Times New Roman', Times, serif;
 }
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
+}

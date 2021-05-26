@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import Login from '@/pages/login/login'
 import Register from '@/pages/register/register'
 import Home from '@/pages/home/home'
+import Error from '@/pages/404/error'
 import GoodsList from '@/pages/goods/goodsList'
 import GoodsDetails from '@/pages/goods/goodsDetails'
 import DetailsMain from '@/pages/goods/details/detailsMain'
@@ -19,6 +20,11 @@ export default new Router({
     {
       path: '/',
       redirect: '/home'
+    },
+    {
+      path: '/404',
+      name: 'error',
+      component: Error
     },
     {
       path: '/login',
@@ -49,6 +55,7 @@ export default new Router({
       path: '/goods/details',
       name: 'details',
       component: GoodsDetails,
+      redirect: '/goods/details/main',
       children: [
         {
           path: 'main',
@@ -81,6 +88,10 @@ export default new Router({
       path: '/personal',
       name: 'personal',
       component: Personal
+    },
+    {
+      path: '*',
+      redirect: '/404'
     }
   ]
 })

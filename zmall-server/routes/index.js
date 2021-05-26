@@ -14,6 +14,8 @@ let LoginStatus = require('../models/loginStatus')
 let Logo = require('../models/logo')
 let Carousel = require('../models/carousel')
 let Classification = require('../models/classification.js')
+let Address = require('../models/address.js')
+let DAddress = require('../models/deliveryAddress')
 
 // 创建路由容器
 let router = express.Router()
@@ -31,6 +33,7 @@ router.all("*", function (req, res, next) {
     const originList = [
         'http://localhost:8888',
         'http://127.0.0.1:8888',
+        'http://localhost:8886',
         'http://127.0.0.1:8886'
     ]
     if (req.headers.origin && originList.includes(req.headers.origin.toLocaleLowerCase())) {
@@ -249,18 +252,12 @@ router.post('/api/private/login', (req, res) => {
     }
 })
 
-// 邮箱校验 ^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$
-// 只允许英文字母、数字、下划线、英文句号、以及中划线组成
-// let reg = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/
-
-
 // 处理注册请求
 router.post('/api/private/register', (req, res) => {
     let {
         username,
         tel,
-        password,
-        code
+        password
     } = req.body
 
     let password2 = md5(md5(password + SECRECYSTRING) + SECRECYSTRING)
@@ -282,15 +279,7 @@ router.post('/api/private/register', (req, res) => {
     let passwordReg1 = /\s/g
     let passwordReg2 = /[^\x00-\xff]/g
 
-    if (code.toLowerCase() !== IDENTIFYINGCODE) {
-        res.json({
-            data: {},
-            meta: {
-                msg: '验证码不正确，请重新输入！',
-                status: 201
-            }
-        })
-    } else if (username[0] === '1') {
+    if (username[0] === '1') {
         res.json({
             data: {},
             meta: {
@@ -427,15 +416,433 @@ router.get('/api/private/islogin', (req, res) => {
     })
 })
 
+// 获取省市县地址级联信息
+router.get('/api/private/address', (req, res) => {
+    Address.find().then(data => {
+        res.json({
+            address: data,
+            status: 200,
+            msg: '获取地址信息成功！'
+        })
+    })
+})
+
 // 根据 id 获取用户信息
 router.get('/api/private/userinfo', (req, res) => {
     let id = req.query.id
     User.findById(id).then(data => {
+        if (data) {
+            res.json({
+                userinfo: {
+                    name: data.name,
+                    email: data.email,
+                    gender: data.gender,
+                    username: data.username,
+                    tel: data.tel,
+                    avatar: data.avatar,
+                    delivery_info_list: data.delivery_info_list,
+                    balance: data.balance,
+                    default_delivery_address_id: data.default_delivery_address_id
+                },
+                status: 200
+            })
+        } else {
+            res.json({
+                status: 201,
+                msg: '用户不存在！'
+            })
+        }
+    }).catch(err => {
+        if (err) {
+            res.json({
+                status: 201,
+                msg: '用户不存在！'
+            })
+        }
+    })
+})
+
+// 修改用户头像
+router.post('/api/private/alteravatar', (req, res) => {
+    let {user_id, avatar} = req.body
+    User.findByIdAndUpdate(user_id, {
+        avatar
+    }).then(() => {
         res.json({
-            userinfo: data,
+            msg: '修改头像成功！',
             status: 200
         })
     })
+})
+
+// 修改密码
+router.post('/api/private/alterpassword', (req, res) => {
+    let {
+        id,
+        passwordForm: {
+            original_password,
+            new_password
+        }
+    } = req.body
+    let password = new_password
+    // 密码校验
+    let passwordReg1 = /\s/g
+    let passwordReg2 = /[^\x00-\xff]/g
+    if (password.length < 8 || password.length > 30) {
+        // 密码长度 8-30
+        res.json({
+            msg: '密码长度必需控制在8-30个字符之间！',
+            status: 201
+        })
+    } else if (passwordReg1.test(password) || passwordReg2.test(password)) {
+        res.json({
+            msg: '密码含有非法字符！',
+            status: 201
+        })
+    } else {
+        // 密码强度校验
+        let strength = 0
+        if ((/[a-zA-Z]/g).test(password)) {
+            strength += 1
+        }
+        if ((/[\d]/g).test(password)) {
+            strength += 1
+        }
+        if ((/[!@#$%^&*()_+=[\]{}\\|;:'",<>.?\/-]/g).test(password)) {
+            strength += 1
+        }
+
+        if (strength < 2) {
+            res.json({
+                msg: '密码强度太低(密码中必需含有字母、数字、特殊符号的两种以上！)',
+                status: 201
+            })
+        } else {
+            password = md5(md5(original_password + SECRECYSTRING) + SECRECYSTRING)
+            new_password = md5(md5(new_password + SECRECYSTRING) + SECRECYSTRING)
+            User.findById(id).then(data => {
+                if (data.password !== password) {
+                    res.json({
+                        msg: '原密码输入不正确！',
+                        status: 201
+                    })
+                } else {
+                    User.findByIdAndUpdate(id, {
+                        password: new_password
+                    }).then(() => {
+                        res.json({
+                            msg: '修改密码成功！',
+                            status: 200
+                        })
+                    })
+                }
+            })
+        }
+    }
+})
+
+// 根据用户id保存收货地址
+router.post('/api/private/savedeliveryinfo', (req, res) => {
+    let {
+        id,
+        delivery_info
+    } = req.body
+    let telReg = /^1((3[0-9])|(4(1|[4-9]))|(5[5-9])|(6(2|[5-7]))|(7([0-3]|[5-8]))|(8[0-9])|(9[189]))[0-9]{8}$/
+    if (!telReg.test(delivery_info.phone)) {
+        // 手机号码校验 (/^[1][3,4,5,6,7,8,9][0-9]{9}$/)
+        res.json({
+            msg: '手机号格式输入错误(必需要11位数，禁止含有除数字外其他字符)！',
+            status: 201
+        })
+    } else {
+        User.findById(id).then(data => {
+            if (!data) {
+                res.json({
+                    msg: '用户不存在！',
+                    status: 201
+                })
+            } else {
+                new DAddress({
+                    user_id: id,
+                    name: delivery_info.name,
+                    phone: delivery_info.phone,
+                    address_front: delivery_info.address_front,
+                    address_after: delivery_info.address_after,
+                    address_list_id: delivery_info.address_list_id
+                }).save(() => {
+                    res.json({
+                        msg: '保存成功！',
+                        status: 200
+                    })
+                })
+            }
+        })
+    }
+})
+
+// 根据id 获取收货地址列表
+router.get('/api/private/deliveryinfolist', (req, res) => {
+    let user_id = req.query.user_id
+    DAddress.find({
+        user_id
+    }).then(data => {
+        res.json({
+            addressList: data,
+            status: 200,
+            msg: '数据获取成功！'
+        })
+    })
+})
+
+// 根据用户id修改收货地址
+router.post('/api/private/alterdeliveryinfo', (req, res) => {
+    let {
+        id,
+        delivery_info
+    } = req.body
+    let telReg = /^1((3[0-9])|(4(1|[4-9]))|(5[5-9])|(6(2|[5-7]))|(7([0-3]|[5-8]))|(8[0-9])|(9[189]))[0-9]{8}$/
+    if (!telReg.test(delivery_info.phone)) {
+        // 手机号码校验 (/^[1][3,4,5,6,7,8,9][0-9]{9}$/)
+        res.json({
+            msg: '手机号格式输入错误(必需要11位数，禁止含有除数字外其他字符)！',
+            status: 201
+        })
+    } else {
+        DAddress.findByIdAndUpdate(id, {
+            name: delivery_info.name,
+            phone: delivery_info.phone,
+            address_front: delivery_info.address_front,
+            address_after: delivery_info.address_after,
+            address_list_id: delivery_info.address_list_id
+        }).then(() => {
+            res.json({
+                msg: '修改成功！',
+                status: 200
+            })
+        })
+    }
+})
+
+// 删除地址
+router.get('/api/private/deletedeliveryInfo', (req, res) => {
+    let id = req.query.id
+    DAddress.findByIdAndRemove(id).then(() => {
+        res.json({
+            msg: '删除成功！',
+            status: 200
+        })
+    })
+})
+
+// 设置默认地址
+router.get('/api/private/setdefault', (req, res) => {
+    let {
+        user_id,
+        address_id
+    } = req.query
+    User.findByIdAndUpdate(user_id, {
+        default_delivery_address_id: address_id
+    }).then(() => {
+        res.json({
+            msg: '设为默认成功！',
+            status: 200
+        })
+    })
+})
+
+// 保存个人信息
+router.post('/api/private/saveuserinfo', (req, res) => {
+    let {
+        id,
+        userinfo: {
+            name,
+            email,
+            gender,
+            tel,
+            avatar
+        }
+    } = req.body
+    let telReg = /^1((3[0-9])|(4(1|[4-9]))|(5[5-9])|(6(2|[5-7]))|(7([0-3]|[5-8]))|(8[0-9])|(9[189]))[0-9]{8}$/
+    // 邮箱校验 ^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$
+    // 只允许英文字母、数字、下划线、英文句号、以及中划线组成
+    let emailReg = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/
+
+    if (tel.trim() === '' || !telReg.test(tel)) {
+        // 手机号码校验 (/^[1][3,4,5,6,7,8,9][0-9]{9}$/)
+        res.json({
+            msg: '手机号输入错误(必需要11位数，禁止含有除数字外其他字符)！',
+            status: 201
+        })
+    } else if (email.trim() !== '' && !emailReg.test(email)) {
+        res.json({
+            msg: '邮箱输入不规范！',
+            status: 201
+        })
+    } else {
+        User.findById(id).then(data => {
+            if (!data) {
+                res.json({
+                    status: 201,
+                    msg: '用户ID不存在！'
+                })
+            } else if (data.tel === tel) {
+                User.findByIdAndUpdate(id, {
+                    name,
+                    email,
+                    gender,
+                    tel,
+                    avatar
+                }).then(() => {
+                    res.json({
+                        msg: '保存成功！',
+                        status: 200
+                    })
+                })
+            } else {
+                User.findOne({
+                    tel
+                }).then(result => {
+                    if (result) {
+                        res.json({
+                            msg: '手机号已经被注册！',
+                            status: 201
+                        })
+                    } else {
+                        User.findByIdAndUpdate(id, {
+                            name,
+                            email,
+                            gender,
+                            tel,
+                            avatar
+                        }).then(() => {
+                            res.json({
+                                msg: '保存成功！',
+                                status: 200
+                            })
+                        })
+                    }
+                })
+            }
+        })
+    }
+})
+
+// 校验用户名
+router.get('/api/private/checkusername', (req, res) => {
+    let username = req.query.username
+    if (username[0] === '1') {
+        res.json({
+            data: {},
+            meta: {
+                msg: '用户名首位禁止为数字 1！',
+                status: 201
+            }
+        })
+    } else if (username.length > 12) {
+        res.json({
+            data: {},
+            meta: {
+                msg: '用户名太长,要12字以内！',
+                status: 201
+            }
+        })
+    } else if ((/\s/g).test(username)) {
+        res.json({
+            data: {},
+            meta: {
+                msg: '用户名含有非法字符，请重新输入！',
+                status: 201
+            }
+        })
+    } else {
+        User.findOne({
+            username
+        }).then(data => {
+            if (data) {
+                res.json({
+                    msg: '用户名已经被注册！',
+                    status: 201
+                })
+            } else {
+                res.json({
+                    msg: 'success!',
+                    status: 200
+                })
+            }
+        })
+    }
+
+})
+
+// 校验手机号
+router.get('/api/private/checkphone', (req, res) => {
+    let tel = req.query.tel
+    let id = req.query.id || ''
+    let telReg = /^1((3[0-9])|(4(1|[4-9]))|(5[5-9])|(6(2|[5-7]))|(7([0-3]|[5-8]))|(8[0-9])|(9[189]))[0-9]{8}$/
+    if (!telReg.test(tel)) {
+        // 手机号码校验 (/^[1][3,4,5,6,7,8,9][0-9]{9}$/)
+        res.json({
+            msg: '手机号格式输入错误(必需要11位数，禁止含有除数字外其他字符)！',
+            status: 201
+        })
+    } else {
+        if (id && tel) {
+            User.findById(id).then(data => {
+                if (data.tel !== tel) {
+                    User.findOne({
+                        tel
+                    }).then(data => {
+                        if (data) {
+                            res.json({
+                                msg: '手机号已经被注册！',
+                                status: 201
+                            })
+                        }
+                    })
+                } else {
+                    res.json({
+                        msg: 'success!',
+                        status: 200
+                    })
+                }
+            })
+        } else if (tel) {
+            User.findOne({
+                tel
+            }).then(data => {
+                if (data) {
+                    res.json({
+                        msg: '手机号已经被注册！',
+                        status: 201
+                    })
+                } else {
+                    res.json({
+                        msg: 'success!',
+                        status: 200
+                    })
+                }
+            })
+        }
+    }
+})
+
+// 校验邮箱
+router.get('/api/private/checkemail', (req, res) => {
+    let email = req.query.email
+    // 邮箱校验 ^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$
+    // 只允许英文字母、数字、下划线、英文句号、以及中划线组成
+    let emailReg = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/
+    if (email.trim() !== '' && !emailReg.test(email)) {
+        res.json({
+            msg: '邮箱输入不规范！',
+            status: 201
+        })
+    } else {
+        res.json({
+            msg: 'success!',
+            status: 200
+        })
+    }
 })
 
 // 导出路由模块
