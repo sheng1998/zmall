@@ -36,7 +36,7 @@ let userSchema = new Schema({
     },
     avatar: {
         type: String,
-        default: 'http://127.0.0.1:3002/uploads/user/avatar.jpg'
+        default: 'http://127.0.0.1:3002/uploads/user/avatar.png'
     },
     gender: {
         type: String,

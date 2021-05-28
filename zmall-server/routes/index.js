@@ -152,37 +152,54 @@ router.post('/api/private/login', (req, res) => {
             if (data) {
                 User.findOne({
                     username,
-                    password
-                }).then(result => {
-                    if (result) {
-                        let code = md5(result._id) + md5(username) + md5(password)
-                        new LoginStatus({
-                            username,
-                            password,
-                            user_id: result._id,
-                            code
-                        }).save().then(() => {
-                            res.json({
-                                data: {
-                                    loginInfo: {
-                                        code,
-                                        username,
-                                        user_id: result._id,
-                                        message: '三小时后自动过期！'
-                                    }
-                                },
-                                meta: {
-                                    msg: '登陆成功！',
-                                    status: 200
-                                }
-                            })
-                        })
-                    } else {
+                    password,
+                    limit: 0
+                }).then((user) => {
+                    if (user) {
                         res.json({
                             data: {},
                             meta: {
-                                msg: '登陆失败，密码错误！',
+                                msg: '该用户禁止登陆！',
                                 status: 201
+                            }
+                        })
+                    } else {
+
+                        User.findOne({
+                            username,
+                            password
+                        }).then(result => {
+                            if (result) {
+                                let code = md5(result._id) + md5(username) + md5(password)
+                                new LoginStatus({
+                                    username,
+                                    password,
+                                    user_id: result._id,
+                                    code
+                                }).save().then(() => {
+                                    res.json({
+                                        data: {
+                                            loginInfo: {
+                                                code,
+                                                username,
+                                                user_id: result._id,
+                                                message: '三小时后自动过期！'
+                                            }
+                                        },
+                                        meta: {
+                                            msg: '登陆成功！',
+                                            status: 200
+                                        }
+                                    })
+                                })
+                            } else {
+                                res.json({
+                                    data: {},
+                                    meta: {
+                                        msg: '登陆失败，密码错误！',
+                                        status: 201
+                                    }
+                                })
                             }
                         })
                     }
@@ -464,7 +481,10 @@ router.get('/api/private/userinfo', (req, res) => {
 
 // 修改用户头像
 router.post('/api/private/alteravatar', (req, res) => {
-    let {user_id, avatar} = req.body
+    let {
+        user_id,
+        avatar
+    } = req.body
     User.findByIdAndUpdate(user_id, {
         avatar
     }).then(() => {

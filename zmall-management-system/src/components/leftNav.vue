@@ -63,12 +63,6 @@
           <span>商品分类管理</span>
         </el-menu-item>
 
-        <!-- 商品属性管理 -->
-        <el-menu-item index="/goods/manage/attribute">
-          <i class="el-icon-s-tools"></i>
-          <span>商品属性管理</span>
-        </el-menu-item>
-
         <!-- 商品评论管理 -->
         <el-menu-item index="/goods/manage/comment">
           <i class="el-icon-s-tools"></i>

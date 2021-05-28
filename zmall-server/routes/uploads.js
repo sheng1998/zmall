@@ -80,16 +80,15 @@ router.all("*", function (req, res, next) {
 // 处理图片上传请求
 router.post('/uploads', upload.single('file'), (req, res, next) => {
     res.json({
-        "data": {
-            "tmp_path": `${req.file.path}`,
-            "url": `http://127.0.0.1:3002/tmp_uploads/${req.file.filename}`
+        data: {
+            tmp_path: `${req.file.path}`,
+            url: `http://127.0.0.1:3002/tmp_uploads/${req.file.filename}`
         },
-        "meta": {
-            "msg": "上传成功",
-            "status": 200
+        meta: {
+            msg: "上传成功",
+            status: 200
         }
     })
-    next()
 })
 
 // 处理用户头像上传请求
@@ -99,7 +98,6 @@ router.post('/uploads/useravatar', upload2.single('file'), (req, res, next) => {
         msg: "上传成功",
         status: 200
     })
-    next()
 })
 
 // 导出路由模块

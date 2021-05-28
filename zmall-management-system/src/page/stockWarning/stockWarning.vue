@@ -1,68 +1,109 @@
 <template>
   <div class="stock-warning">
     <div class="xmf-system-flex fzzj">库存预警</div>
-    <el-table :data="goodsList" stripe style="width: 100%" border>
-      <!-- 名称 -->
-      <el-table-column prop="goods_name" label="名称" align="center" sortable>
-      </el-table-column>
-
+    <el-table :data="goodsList" style="width: 100%" border>
       <!-- 图片 -->
-      <el-table-column label="图片" align="center">
+      <el-table-column label="图片" align="center" width="200">
         <template slot-scope="scope">
           <div class="goods-imglist">
-            <el-carousel
-              trigger="click"
-              height="50px"
-              :interval="5000"
-              indicator-position="none"
+            <el-tooltip
+              class="item"
+              effect="dark"
+              content="点击图片可以进行大图预览"
+              placement="top-end"
             >
-              <el-carousel-item v-for="img in scope.row.img_list" :key="img">
-                <el-image
-                  fit="cover"
-                  :src="img"
-                  :preview-src-list="scope.row.img_list"
-                ></el-image>
-              </el-carousel-item>
-            </el-carousel>
+              <el-image
+                :src="scope.row.img_list[0]"
+                :preview-src-list="scope.row.img_list"
+              ></el-image>
+            </el-tooltip>
           </div>
         </template>
+      </el-table-column>
+
+      <!-- 商品编码-->
+      <el-table-column
+        prop="_id"
+        label="商品编码"
+        align="center"
+        width="220"
+        :show-overflow-tooltip="true"
+      >
+      </el-table-column>
+
+      <!-- 名称 -->
+      <el-table-column
+        prop="goods_name"
+        label="商品名称"
+        align="center"
+        width="300"
+        sortable
+        :show-overflow-tooltip="true"
+      >
+      </el-table-column>
+
+      <!-- 描述 -->
+      <el-table-column
+        prop="describe"
+        label="商品描述"
+        align="center"
+        width="300"
+        :show-overflow-tooltip="true"
+      >
+      </el-table-column>
+
+      <!-- 商品分类 -->
+      <el-table-column
+        prop="classification"
+        label="商品分类"
+        align="center"
+        width="140"
+        :show-overflow-tooltip="true"
+      >
       </el-table-column>
 
       <!-- 库存 -->
       <el-table-column
         prop="goods_number"
-        label="库存"
-        width="100"
+        label="库存（件）"
+        width="140"
         sortable
         align="center"
       >
+        <template slot-scope="scope">
+          <div style="color: tomato;font-size: 18px;">
+            {{ scope.row.goods_number }}
+          </div>
+        </template>
       </el-table-column>
 
       <!-- 总销量 -->
       <el-table-column
         prop="total_sales"
-        label="总销量"
-        width="100"
+        label="总销量（件）"
+        width="140"
         sortable
         align="center"
+        :show-overflow-tooltip="true"
       >
       </el-table-column>
 
       <!-- 价格 -->
       <el-table-column
         prop="price"
-        label="价格"
-        width="100"
+        label="价格（元）"
+        width="140"
         sortable
         align="center"
+        :show-overflow-tooltip="true"
       >
         <template slot-scope="scope">
           <div>{{ scope.row.price | fmtAmount }}元</div>
         </template>
       </el-table-column>
 
-      <!-- 是否上架 -->
-      <el-table-column label="是否上架" width="120" align="center">
+      <!-- 在售状态 -->
+      <el-table-column label="在售状态" width="120" align="center">
         <template slot-scope="scope">
           <div>
             <el-switch
@@ -73,6 +114,20 @@
             >
             </el-switch>
           </div>
+        </template>
+      </el-table-column>
+
+      <!-- 商品添加时间 -->
+      <el-table-column
+        prop="created_time"
+        label="商品添加时间"
+        width="160"
+        sortable
+        align="center"
+        :show-overflow-tooltip="true"
+      >
+        <template slot-scope="scope">
+          <div>{{ scope.row.created_time | fmtdate2 }}</div>
         </template>
       </el-table-column>
 
@@ -111,7 +166,7 @@
                   type="danger"
                   icon="el-icon-delete"
                   circle
-                  @click="deleteGoods(scope.row.goods_id)"
+                  @click="deleteGoods(scope.row._id)"
                 ></el-button>
               </el-tooltip>
             </el-row>
@@ -181,19 +236,19 @@ export default {
 
     // 编辑商品上架状态
     changeState (goods) {
-      goods.onsale = true
-      this.$confirm('是否要下架该商品?', '提示', {
+      let text = goods.onsale ? '上架' : '下架'
+      goods.onsale = !goods.onsale
+      this.$confirm(`是否要${text}该商品?`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       })
         .then(() => {
-          goods.onsale = false
           this.$axios
             .get('/alter/goods/state', {
               params: {
-                goods_id: goods.goods_id,
-                state: false
+                goods_id: goods._id,
+                state: !goods.onsale
               }
             })
             .then(res => {
@@ -201,10 +256,11 @@ export default {
                 meta: { msg, status }
               } = res.data
               if (status === 200) {
-                this.$message.success('下架商品成功！')
+                this.$message.success(`${text}商品成功！`)
+                goods.onsale = !goods.onsale
                 this.getStockWarningGoods()
               } else {
-                goods.onsale = true
+                goods.onsale = goods.onsale
                 this.$message.error(msg)
               }
             })
@@ -212,7 +268,7 @@ export default {
         .catch(() => {
           this.$message({
             type: 'info',
-            message: '已取消下架'
+            message: '已取消' + text
           })
         })
     },
@@ -221,7 +277,7 @@ export default {
     toEditGoods (goods) {
       // 跳转到商品编辑页面
       this.$router.push({
-        path: `/goods/manage/editgoods?goods_id=${goods.goods_id}`
+        path: `/goods/manage/editgoods?goods_id=${goods._id}`
       })
     },
 
@@ -274,7 +330,29 @@ export default {
     img {
       height: 50px;
       width: auto;
+      max-width: 180px;
     }
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    /*滚动条里面小方块*/
+    border-radius: 10px;
+    background-color: skyblue;
+    background-image: -webkit-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.2) 25%,
+      transparent 25%,
+      transparent 50%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 255, 255, 0.2) 75%,
+      transparent 75%,
+      transparent
+    );
   }
 
   .fenye {

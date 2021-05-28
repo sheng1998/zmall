@@ -362,6 +362,7 @@ export default {
       if (!this.goodsStarp.value) {
         return this.$message.error('请先选择要绑定的商品！')
       }
+      console.log(this.goodsStarp)
       this.$axios
         .post('/uploads/carousel', {
           goods_id: this.goodsStarp.value,
@@ -430,7 +431,7 @@ export default {
     selectChange () {
       if (this.goodsStarp.value) {
         this.goodsStarp.options.forEach(item => {
-          if (item.goods_id === Number(this.goodsStarp.value)) {
+          if (item.goods_id === this.goodsStarp.value) {
             this.goodsStarp.goodsImgList = item.img_list
           }
         })

@@ -13,8 +13,10 @@ let carouselRouter = require('./routes/carousel')
 let classificationRouter = require('./routes/classification')
 let goodsRouter = require('./routes/goods')
 let orderRouter = require('./routes/order')
+let userRouter = require('./routes/user')
 let logoLouter = require('./routes/logo')
 let uploadsRouter = require('./routes/uploads')
+let parameterRouter = require('./routes/parameter')
 
 // 创建 express 的实例
 let app = express()
@@ -38,8 +40,10 @@ app.use(carouselRouter)
 app.use(classificationRouter)
 app.use(goodsRouter)
 app.use(orderRouter)
+app.use(userRouter)
 app.use(logoLouter)
 app.use(uploadsRouter)
+app.use(parameterRouter)
 
 // 监听服务器端口
 app.listen(3002, () => {

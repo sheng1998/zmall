@@ -4,11 +4,6 @@ let mongoose = require('mongoose')
 let Schema = mongoose.Schema
 
 let goodsSchema = new Schema({
-    // 商品 id
-    goods_id: {
-        type: Number,
-        required: true
-    },
     // 商品名称
     goods_name: {
         type: String,

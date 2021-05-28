@@ -11,7 +11,7 @@ let Goods = require('../models/goods.js')
 let Carousel = require('../models/carousel')
 
 // 商品图片保存地址
-let GOODSIMGPATH = 'uploads/goods/test/'
+let GOODSIMGPATH = 'uploads/goods/'
 
 // 创建路由容器
 let router = express.Router()
@@ -19,19 +19,28 @@ let router = express.Router()
 // 处理跨域请求
 router.all("*", function (req, res, next) {
     //设置允许跨域的域名，*代表允许任意域名跨域
-    res.header("Access-Control-Allow-Origin", "*");
+    // res.header("Access-Control-Allow-Origin", "http://localhost:8888");
+
+    // 允许多个域名跨域
+    const originList = [
+        'http://localhost:8886',
+        'http://127.0.0.1:8886'
+    ]
+    if (req.headers.origin && originList.includes(req.headers.origin.toLocaleLowerCase())) {
+        res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
+    }
+
     //允许的header类型
     res.header("Access-Control-Allow-Headers", "Origin,X-Requested-With,Content-Type,Accept");
     //跨域允许的请求方式
     res.header("Access-Control-Allow-Methods", "DELETE,PUT,POST,GET,OPTIONS");
+    res.header('Access-Control-Allow-Credentials', 'true');
     next();
 })
 
 // 根据商品 id 获取商品
 router.get('/goods/byid', (req, res) => {
-    Goods.findOne({
-        goods_id: Number(req.query.goods_id)
-    }).then(data => {
+    Goods.findById(req.query.goods_id).then(data => {
         res.json({
             data,
             meta: {
@@ -51,7 +60,7 @@ router.get('/goods/onlyname', (req, res) => {
         let goods_list = []
         data.forEach(item => {
             goods_list.push({
-                goods_id: item.goods_id,
+                goods_id: item._id,
                 goods_name: item.goods_name,
                 img_list: item.img_list
             })
@@ -77,6 +86,10 @@ router.get('/goods/withname', (req, res) => {
             goods_name: {
                 $regex: reg
             }
+        }, {
+            classification: {
+                $regex: reg
+            }
         }],
         is_delete: 0,
         is_sale: 1
@@ -84,7 +97,7 @@ router.get('/goods/withname', (req, res) => {
         let goods_list = []
         data.forEach(item => {
             goods_list.push({
-                goods_id: item.goods_id,
+                goods_id: item._id,
                 goods_name: item.goods_name,
                 img_list: item.img_list
             })
@@ -117,6 +130,14 @@ router.get('/goods/onsale', (req, res) => {
             goods_name: {
                 $regex: reg
             }
+        }, {
+            describe: {
+                $regex: reg
+            }
+        }, {
+            classification: {
+                $regex: reg
+            }
         }],
         is_delete: 0,
         is_sale: 1
@@ -124,6 +145,14 @@ router.get('/goods/onsale', (req, res) => {
         Goods.find({
                 $or: [{
                     goods_name: {
+                        $regex: reg
+                    }
+                }, {
+                    describe: {
+                        $regex: reg
+                    }
+                }, {
+                    classification: {
                         $regex: reg
                     }
                 }],
@@ -166,6 +195,14 @@ router.get('/goods/offsale', (req, res) => {
             goods_name: {
                 $regex: reg
             }
+        }, {
+            describe: {
+                $regex: reg
+            }
+        }, {
+            classification: {
+                $regex: reg
+            }
         }],
         is_delete: 0,
         is_sale: 0
@@ -173,6 +210,14 @@ router.get('/goods/offsale', (req, res) => {
         Goods.find({
                 $or: [{
                     goods_name: {
+                        $regex: reg
+                    }
+                }, {
+                    describe: {
+                        $regex: reg
+                    }
+                }, {
+                    classification: {
                         $regex: reg
                     }
                 }],
@@ -202,11 +247,25 @@ router.get('/goods/offsale', (req, res) => {
 // 添加商品
 router.post('/add/goods', (req, res) => {
     let goodsData = req.body
+    let goodsName = goodsData.goods_name.trim()
+    goodsName = goodsName.replace(/[`\\?、╲/*'"‘“”’<>|]/ig, '')
+    if (goodsName === '') {
+        goodsName = '商品图片'
+    }
+    fs.mkdir(`./uploads/goods/${goodsName}`, { // 创建目录
+        recursive: true
+    }, err => {
+        if (err) {
+            throw err
+        }
+    })
+
     let img_list = goodsData.img_list
     let asyncArray = []
+
     img_list.forEach((item, index) => {
         let path = item
-        let newPath = `${GOODSIMGPATH}${path.split('\\')[1]}`
+        let newPath = `${GOODSIMGPATH}${goodsName}/${path.split('\\')[1]}`
         asyncArray.push(
             new Promise((reslove, reject) => {
                 fs.copyFile(path, `./${newPath}`, err => {
@@ -223,34 +282,21 @@ router.post('/add/goods', (req, res) => {
 
     Promise.all(asyncArray).then((result) => {
         goodsData.img_list = result
-
-        Goods.find().sort({
-                goods_id: -1
-            })
-            .exec().then(data => {
-                let goods_id = 0
-                if (data.length === 0) {
-                    goods_id = 1
-                } else {
-                    goods_id = data[0].goods_id + 1
+        new Goods(goodsData).save().then(() => {
+            res.json({
+                data: {},
+                meta: {
+                    msg: '保存商品数据成功！',
+                    status: 200
                 }
-                goodsData.goods_id = goods_id
-                new Goods(goodsData).save().then(() => {
-                    res.json({
-                        data: {},
-                        meta: {
-                            msg: '保存商品数据成功！',
-                            status: 200
-                        }
-                    })
-                })
             })
+        })
     })
 })
 
 // 修改商品状态
 router.get('/alter/goods/state', (req, res) => {
-    let id = Number(req.query.goods_id)
+    let id = req.query.goods_id
     let state = req.query.state === 'true' ? 1 : 0
     if (state === 0) {
         Carousel.findOne({
@@ -265,10 +311,9 @@ router.get('/alter/goods/state', (req, res) => {
                     }
                 })
             } else {
-                Goods.findOneAndUpdate({
-                    goods_id: id
-                }, {
-                    is_sale: state
+                Goods.findByIdAndUpdate(id, {
+                    is_sale: state,
+                    last_modify_time: new Date
                 }).then(() => {
                     res.json({
                         data: {},
@@ -281,10 +326,9 @@ router.get('/alter/goods/state', (req, res) => {
             }
         })
     } else {
-        Goods.findOneAndUpdate({
-            goods_id: id
-        }, {
-            is_sale: state
+        Goods.findByIdAndUpdate(id, {
+            is_sale: state,
+            last_modify_time: new Date
         }).then(() => {
             res.json({
                 data: {},
@@ -299,7 +343,7 @@ router.get('/alter/goods/state', (req, res) => {
 
 // 删除商品
 router.get('/delete/goods', (req, res) => {
-    let id = Number(req.query.id)
+    let id = req.query.id
     Carousel.findOne({
         goods_id: id
     }).then(data => {
@@ -312,10 +356,9 @@ router.get('/delete/goods', (req, res) => {
                 }
             })
         } else {
-            Goods.findOneAndUpdate({
-                goods_id: id
-            }, {
-                is_delete: 1
+            Goods.findByIdAndUpdate(id, {
+                is_delete: 1,
+                last_modify_time: new Date
             }).then(() => {
                 res.json({
                     data: {},
@@ -324,6 +367,26 @@ router.get('/delete/goods', (req, res) => {
                         status: 200
                     }
                 })
+            }).catch(err => {
+                if (err) {
+                    res.json({
+                        data: {},
+                        meta: {
+                            msg: '删除商品失败！',
+                            status: 201
+                        }
+                    })
+                }
+            })
+        }
+    }).catch(err => {
+        if (err) {
+            res.json({
+                data: {},
+                meta: {
+                    msg: '删除商品失败！',
+                    status: 201
+                }
             })
         }
     })
@@ -336,12 +399,24 @@ router.post('/edit/goods', (req, res) => {
         goods_form
     } = req.body
 
+    let goodsName = req.body.goods_form.goods_name.trim()
+    goodsName = goodsName.replace(/[`\\?、╲/*'"‘“”’<>|]/ig, '')
+    if (goodsName === '') {
+        goodsName = '商品图片'
+    }
+    fs.mkdir(`./uploads/goods/${goodsName}`, { // 创建目录
+        recursive: true
+    }, err => {
+        if (err) {
+            throw err
+        }
+    })
+
     let asyncArray = []
     goods_form.img_list.forEach((item, index) => {
         if (item.includes('/tmp_uploads/')) {
             let path = item.split('http://127.0.0.1:3002/')[1]
-            let newPath = `${GOODSIMGPATH}${item.split('/tmp_uploads/')[1]}`
-            console.log(path, newPath)
+            let newPath = `${GOODSIMGPATH}${goodsName}/${item.split('/tmp_uploads/')[1]}`
             asyncArray.push(
                 new Promise((reslove, reject) => {
                     fs.copyFile(path, `./${newPath}`, err => {
@@ -358,9 +433,7 @@ router.post('/edit/goods', (req, res) => {
     })
 
     Promise.all(asyncArray).then(() => {
-        Goods.findOneAndUpdate({
-            goods_id: Number(goods_id)
-        }, {
+        Goods.findByIdAndUpdate(goods_id, {
             goods_name: goods_form.goods_name,
             describe: goods_form.describe,
             price: Number(goods_form.price),
@@ -396,8 +469,7 @@ router.get('/stockwarning', (req, res) => {
         goods_number: {
             $lt: 100
         },
-        is_delete: 0,
-        is_sale: 1
+        is_delete: 0
     }).then(data => {
         res.json({
             warning_goods_number: data.length,
@@ -423,15 +495,13 @@ router.get('/stockwarning/goodslist', (req, res) => {
         goods_number: {
             $lt: 100
         },
-        is_delete: 0,
-        is_sale: 1
+        is_delete: 0
     }).then(num => {
         Goods.find({
                 goods_number: {
                     $lt: 100
                 },
-                is_delete: 0,
-                is_sale: 1
+                is_delete: 0
             })
             .skip(parseInt((page_size - 1) * data_number))
             .limit(parseInt(data_number))

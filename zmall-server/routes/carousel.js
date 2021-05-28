@@ -32,12 +32,10 @@ router.get('/carousel', (req, res) => {
         .exec()
         .then(result => {
             let asyncArray = []
-            result.forEach((item, index) => {
+            result.forEach(item => {
                 asyncArray.push(
                     new Promise((reslove, reject) => {
-                        Goods.findOne({
-                            goods_id: item.goods_id
-                        }).then(data => {
+                        Goods.findById(item.goods_id).then(data => {
                             reslove({
                                 goods_id: data.goods_id,
                                 goods_name: data.goods_name,
@@ -70,7 +68,7 @@ router.get('/carousel', (req, res) => {
 
 // 处理轮播图上传请求
 router.post('/uploads/carousel', (req, res) => {
-    let goods_id = Number(req.body.goods_id)
+    let goods_id = req.body.goods_id
     let path = req.body.tmp_path
     let newPath = `uploads/carousel/${path.split('\\')[1]}`
     copyFile(path, `./${newPath}`, () => {

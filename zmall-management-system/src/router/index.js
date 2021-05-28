@@ -8,12 +8,12 @@ import GoodsList from '@/page/goods/goodslist'
 import OffSaleGoodsList from '@/page/goods/offsaleGoodsList'
 import AddGoods from '@/page/goods/addGoods'
 import EditGoods from '@/page/goods/editGoods'
-import Attribute from '@/page/goods/attribute'
 import Comment from '@/page/goods/comment'
 import Order from '@/page/order/order'
 import StockWarning from '@/page/stockWarning/stockWarning'
 import User from '@/page/user/user'
 import Statistics from '@/page/statistics/statistics'
+import Parameter from '@/page/goods/parameter'
 
 Vue.use(Router)
 
@@ -73,12 +73,6 @@ const router = new Router({
           name: 'editgoods',
           component: EditGoods
         },
-        // 属性管理页面路由
-        {
-          path: '/goods/manage/attribute',
-          name: 'attribute',
-          component: Attribute
-        },
         // 商品评论管理页面路由
         {
           path: '/goods/manage/comment',
@@ -108,6 +102,12 @@ const router = new Router({
           path: '/manage/statistics',
           name: 'statistics',
           component: Statistics
+        },
+        // 商品参数添加页面
+        {
+          path: '/goods/all/parameter',
+          name: 'parameter',
+          component: Parameter
         }
       ]
     }

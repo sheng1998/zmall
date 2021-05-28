@@ -29,3 +29,7 @@
 .el-image-viewer__wrapper {
   z-index: 3000!important;
 }
+
+.el-tooltip__popper {
+  max-width: 500px;
+}

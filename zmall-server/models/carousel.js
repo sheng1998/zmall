@@ -11,7 +11,7 @@ let carouselSchema = new Schema({
     },
     // 轮播图绑定的商品
     goods_id: {
-        type: Number,
+        type: String,
         required: true
     },
     // 创建时间

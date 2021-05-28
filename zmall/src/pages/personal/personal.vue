@@ -77,6 +77,7 @@
           </el-form-item>
         </el-form>
 
+        <!-- 收货地址列表 -->
         <div class="address-list" v-if="addressList.length > 0">
           <div class="title fzzj">收货地址</div>
           <el-table :data="addressList" border>

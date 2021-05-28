@@ -103,14 +103,20 @@
         </el-form-item>
 
         <!-- 商品分类 -->
-        <el-form-item label="商品分类" prop="classification">
+        <el-form-item
+          label="商品分类"
+          prop="classification"
+          style="margin-top: 60px;"
+        >
           <template>
             <div class="classification">
               <el-select
                 v-model="form.classification"
                 filterable
+                ref="classificationSelect"
                 placeholder="请选择商品分类"
                 @change="classificationChange"
+                @focus="rememberClassification"
               >
                 <el-option
                   :label="item.class_name"
@@ -120,11 +126,6 @@
                 ></el-option>
               </el-select>
             </div>
-            <div class="add-classification-btn">
-              <el-button type="primary" @click="toAddClassification"
-                >前往添加新的分类</el-button
-              >
-            </div>
           </template>
         </el-form-item>
 
@@ -132,77 +133,75 @@
         <el-form-item label="商品属性" prop="attribute">
           <template>
             <div>
+              <el-button type="primary" @click="addAttributeDia = true"
+                >添加商品属性</el-button
+              >
               <!-- 属性对应的表格 -->
-              <div v-if="form.classification && attributeList.length > 0">
-                <el-table
-                  :data="attributeList"
-                  stripe
-                  border
-                  style="width: 100%"
+              <el-table :data="form.attribute" style="width: 100%">
+                <el-table-column
+                  prop="name"
+                  label="参数名"
+                  width="180"
+                  :show-overflow-tooltip="true"
                 >
-                  <!-- # -->
-                  <el-table-column
-                    type="index"
-                    label="#"
-                    width="80"
-                    align="center"
-                  >
-                  </el-table-column>
+                </el-table-column>
 
-                  <!-- 属性名 -->
-                  <el-table-column
-                    prop="attribute_name"
-                    label="属性名"
-                    width="180"
-                  >
-                  </el-table-column>
+                <!-- 属性值 -->
+                <el-table-column label="参数值" width="1000">
+                  <template slot-scope="scope">
+                    <div>
+                      <el-tag
+                        effect="dark"
+                        :type="tagType[index % 5]"
+                        v-for="(tag, index) in scope.row.value"
+                        :key="tag"
+                        closable
+                        @close="handleClose(scope.row.name, tag)"
+                        >{{ tag }}</el-tag
+                      >
+                    </div>
+                  </template>
+                </el-table-column>
 
-                  <!-- 可选属性值 -->
-                  <el-table-column label="属性值">
-                    <template slot-scope="scope">
-                      <div>
-                        <el-checkbox-group v-model="checkedAttributeValueList">
-                          <el-checkbox
-                            v-for="item in scope.row.children"
-                            :label="
-                              scope.row.attribute_name +
-                                '-attributeName-' +
-                                item
-                            "
-                            :key="item"
-                            >{{ item }}</el-checkbox
-                          >
-                        </el-checkbox-group>
-                      </div>
-                    </template>
-                  </el-table-column>
-                </el-table>
-                <el-button
-                  type="primary"
-                  class="add-attribute-btn"
-                  @click="toAddattribute"
-                  >前往添加分类属性</el-button
-                >
-              </div>
+                <!-- 操作 -->
+                <el-table-column label="操作" width="120" fixed="right">
+                  <template slot-scope="scope">
+                    <div>
+                      <el-row>
+                        <!-- 编辑商品属性 -->
+                        <el-button
+                          size="mini"
+                          plain
+                          type="primary"
+                          icon="el-icon-edit"
+                          circle
+                          @click="
+                            showAddAttributeDia(scope.row.name, scope.row.value)
+                          "
+                        ></el-button>
 
-              <!-- 选择了分类，但是分类属性没有值 -->
-              <div v-if="form.classification && attributeList.length === 0">
-                <el-alert
-                  title="该分类尚未设置属性，点击下方按钮前往商品属性管理页面为该分类添加属性。！注意！：如果前往，则以上数据需要重新填写。"
-                  :closable="false"
-                  effect="dark"
-                  type="warning"
-                  show-icon
-                >
-                </el-alert>
-                <el-button
-                  type="primary"
-                  class="add-attribute-btn"
-                  @click="toAddattribute"
-                  >前往添加分类属性</el-button
-                >
-              </div>
+                        <!-- 删除商品属性 -->
+                        <el-button
+                          size="mini"
+                          plain
+                          type="danger"
+                          icon="el-icon-delete"
+                          circle
+                          @click="deleteAttribute(scope.row.name)"
+                        ></el-button>
+                      </el-row>
+                    </div>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+          </template>
+        </el-form-item>
 
+        <!-- 商品参数 -->
+        <el-form-item label="商品参数">
+          <template>
+            <div class="params">
               <!-- 未选择分类 -->
               <div class="no-classification" v-if="!form.classification">
                 <el-alert
@@ -214,234 +213,33 @@
                 >
                 </el-alert>
               </div>
-            </div>
-          </template>
-        </el-form-item>
 
-        <!-- 商品参数 -->
-        <el-form-item label="商品参数">
-          <template>
-            <div class="goods-parameter">
-              <!-- 主体 -->
-              <div class="body">
-                <div class="title">
-                  主体
-                  <el-button
-                    type="primary"
-                    @click="showAddParameterDia('bodyParameterList')"
-                    >添加参数</el-button
-                  >
-                </div>
-                <el-table
-                  :data="bodyParameterList"
-                  border
-                  stripe
-                  style="width: 100%"
+              <div class="has-classification" v-else>
+                <el-button
+                  style="margin-bottom: 20px;"
+                  type="primary"
+                  @click="toAddParams"
                 >
-                  <el-table-column prop="name" label="参数名" width="180">
-                  </el-table-column>
-                  <el-table-column prop="value" label="参数值">
-                  </el-table-column>
-                  <el-table-column prop="remarks" label="备注">
-                  </el-table-column>
-                  <el-table-column label="操作" width="120" align="center">
-                    <template slot-scope="scope">
-                      <div>
-                        <el-row>
-                          <!-- 修改参数 -->
-                          <el-tooltip
-                            class="item"
-                            effect="light"
-                            content="修改参数"
-                            placement="top-end"
-                          >
-                            <el-button
-                              size="mini"
-                              plain
-                              type="primary"
-                              icon="el-icon-edit"
-                              circle
-                              @click="
-                                showAlterDia('bodyParameterList', scope.row)
-                              "
-                            ></el-button>
-                          </el-tooltip>
-
-                          <!-- 删除参数 -->
-                          <el-tooltip
-                            class="item"
-                            effect="light"
-                            content="删除参数"
-                            placement="top-end"
-                          >
-                            <el-button
-                              size="mini"
-                              plain
-                              type="danger"
-                              icon="el-icon-delete"
-                              circle
-                              @click="
-                                deleteParameter(
-                                  'bodyParameterList',
-                                  scope.row.name
-                                )
-                              "
-                            ></el-button>
-                          </el-tooltip>
-                        </el-row>
-                      </div>
-                    </template>
-                  </el-table-column>
-                </el-table>
-              </div>
-
-              <!-- 主要参数 -->
-              <div class="main">
-                <div class="title">
-                  主要参数
-                  <el-button
-                    type="primary"
-                    @click="showAddParameterDia('mainParameterList')"
-                    >添加参数</el-button
-                  >
-                </div>
-                <el-table
-                  :data="mainParameterList"
-                  border
-                  stripe
-                  style="width: 100%"
+                  前往添加商品参数
+                </el-button>
+                <el-card
+                  shadow="hover"
+                  v-for="item in form.parameter"
+                  :key="item.name"
+                  class="parameter-item"
                 >
-                  <el-table-column prop="name" label="参数名" width="180">
-                  </el-table-column>
-                  <el-table-column prop="value" label="参数值">
-                  </el-table-column>
-                  <el-table-column prop="remarks" label="备注">
-                  </el-table-column>
-                  <el-table-column label="操作" width="120" align="center">
-                    <template slot-scope="scope">
-                      <div>
-                        <el-row>
-                          <!-- 修改参数 -->
-                          <el-tooltip
-                            class="item"
-                            effect="light"
-                            content="修改参数"
-                            placement="top-end"
-                          >
-                            <el-button
-                              size="mini"
-                              plain
-                              type="primary"
-                              icon="el-icon-edit"
-                              circle
-                              @click="
-                                showAlterDia('mainParameterList', scope.row)
-                              "
-                            ></el-button>
-                          </el-tooltip>
-
-                          <!-- 删除参数 -->
-                          <el-tooltip
-                            class="item"
-                            effect="light"
-                            content="删除参数"
-                            placement="top-end"
-                          >
-                            <el-button
-                              size="mini"
-                              plain
-                              type="danger"
-                              icon="el-icon-delete"
-                              circle
-                              @click="
-                                deleteParameter(
-                                  'mainParameterList',
-                                  scope.row.name
-                                )
-                              "
-                            ></el-button>
-                          </el-tooltip>
-                        </el-row>
-                      </div>
-                    </template>
-                  </el-table-column>
-                </el-table>
-              </div>
-
-              <!-- 尺寸和重量 -->
-              <div class="size-and-weight">
-                <div class="title">
-                  尺寸和重量
-                  <el-button
-                    type="primary"
-                    @click="showAddParameterDia('sizeAndWeightParameterList')"
-                    >添加参数</el-button
+                  <div class="parameter-name">
+                    {{ item.name }}
+                  </div>
+                  <div
+                    v-for="(parameter, index) in item.value"
+                    :key="index"
+                    class="parameter-list"
                   >
-                </div>
-                <el-table
-                  :data="sizeAndWeightParameterList"
-                  border
-                  stripe
-                  style="width: 100%"
-                >
-                  <el-table-column prop="name" label="参数名" width="180">
-                  </el-table-column>
-                  <el-table-column prop="value" label="参数值">
-                  </el-table-column>
-                  <el-table-column prop="remarks" label="备注">
-                  </el-table-column>
-                  <el-table-column label="操作" width="120" align="center">
-                    <template slot-scope="scope">
-                      <div>
-                        <el-row>
-                          <!-- 修改参数 -->
-                          <el-tooltip
-                            class="item"
-                            effect="light"
-                            content="修改参数"
-                            placement="top-end"
-                          >
-                            <el-button
-                              size="mini"
-                              plain
-                              type="primary"
-                              icon="el-icon-edit"
-                              circle
-                              @click="
-                                showAlterDia(
-                                  'sizeAndWeightParameterList',
-                                  scope.row
-                                )
-                              "
-                            ></el-button>
-                          </el-tooltip>
-
-                          <!-- 删除参数 -->
-                          <el-tooltip
-                            class="item"
-                            effect="light"
-                            content="删除参数"
-                            placement="top-end"
-                          >
-                            <el-button
-                              size="mini"
-                              plain
-                              type="danger"
-                              icon="el-icon-delete"
-                              circle
-                              @click="
-                                deleteParameter(
-                                  'sizeAndWeightParameterList',
-                                  scope.row.name
-                                )
-                              "
-                            ></el-button>
-                          </el-tooltip>
-                        </el-row>
-                      </div>
-                    </template>
-                  </el-table-column>
-                </el-table>
+                    <div class="parameter-title">{{ parameter.title }}</div>
+                    <div class="parameter-value">{{ parameter.value }}</div>
+                  </div>
+                </el-card>
               </div>
             </div>
           </template>
@@ -451,62 +249,60 @@
       <!-- 保存按钮 -->
       <div class="goodsinfo-submit-btn xmf-system-flex">
         <el-button type="danger" @click="clearFormData">清空表单数据</el-button>
-        <el-button type="success" @click="temporarySaveDataToLocalStorage"
+        <el-button type="primary" @click="temporarySaveDataToLocalStorage"
           >临时保存商品数据</el-button
         >
         <el-button type="success" @click="saveGoods">提交商品数据</el-button>
       </div>
     </el-card>
 
-    <!-- 添加参数对话框 -->
+    <!-- 添加、修改商品属性对话框 -->
     <el-dialog
-      title="添加参数"
-      :visible.sync="parameterDialogVisible"
-      @closed="closeDia"
+      title="添加、修改商品属性"
+      :visible.sync="addAttributeDia"
+      @close="clearAddAttributeForm"
     >
-      <el-form :model="parameterForm">
-        <el-form-item label="参数名称" label-width="120px">
-          <el-input v-model="parameterForm.name" autocomplete="off"></el-input>
+      <el-form
+        :model="addAttributeForm"
+        :rules="addAttributeRules"
+        ref="addAttributeForm"
+      >
+        <!-- 属性名 -->
+        <el-form-item label="属性名" label-width="120px" prop="name">
+          <el-tooltip
+            class="item"
+            effect="light"
+            content="添加属性时多个属性名之间用全角句号'。'隔开，修改时只能填写一个属性名"
+            placement="top-start"
+          >
+            <el-input
+              v-model="addAttributeForm.name"
+              autocomplete="off"
+            ></el-input>
+          </el-tooltip>
         </el-form-item>
-        <el-form-item label="参数值" label-width="120px">
-          <el-input v-model="parameterForm.value" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="备注" label-width="120px">
-          <el-input
-            v-model="parameterForm.remarks"
-            autocomplete="off"
-          ></el-input>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="parameterDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addParameter">确 定</el-button>
-      </div>
-    </el-dialog>
 
-    <!-- 修改参数对话框 -->
-    <el-dialog
-      title="修改参数"
-      :visible.sync="parameterDialogVisible2"
-      @closed="closeDia"
-    >
-      <el-form :model="parameterForm">
-        <el-form-item label="参数名称" label-width="120px">
-          <el-input v-model="parameterForm.name" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="参数值" label-width="120px">
-          <el-input v-model="parameterForm.value" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="备注" label-width="120px">
-          <el-input
-            v-model="parameterForm.remarks"
-            autocomplete="off"
-          ></el-input>
+        <!-- 属性值 -->
+        <el-form-item label="属性值" label-width="120px" prop="value">
+          <el-tooltip
+            class="item"
+            effect="light"
+            content="多个属性值之间用半角逗号','隔开，添加属性时不同属性名的属性值之间用全角句号'。'分组"
+            placement="bottom-start"
+          >
+            <el-input
+              type="textarea"
+              v-model="addAttributeForm.value"
+              autocomplete="off"
+            ></el-input>
+          </el-tooltip>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="parameterDialogVisible2 = false">取 消</el-button>
-        <el-button type="primary" @click="alterParameter">确 定</el-button>
+        <el-button @click="addAttributeDia = false">取 消</el-button>
+        <el-button type="primary" @click="addAttribute('addAttributeForm')"
+          >确 定</el-button
+        >
       </div>
     </el-dialog>
   </div>
@@ -523,6 +319,9 @@ import { quillEditor } from 'vue-quill-editor'
 export default {
   data () {
     return {
+      // 定时器
+      timer: null,
+
       // 商品数据表单
       form: {
         goods_name: '',
@@ -556,25 +355,35 @@ export default {
         attribute: [{ required: true, message: '', trigger: 'blur' }]
       },
       classList: [], // 分类列表的数据
-      attributeList: [], // 属性列表的数据
-      checkedAttributeValueList: [],
       fileList: [],
       tmpFileList: [],
       dialogImageUrl: '',
       dialogVisible: false,
-      bodyParameterList: [],
-      mainParameterList: [],
-      sizeAndWeightParameterList: [],
-      parameterDialogVisible: false,
-      parameterDialogVisible2: false,
-      parameterForm: {
+      isSubmit: false,
+      // 标签类型
+      tagType: ['', 'success', 'info', 'warning', 'danger'],
+
+      // 添加、修改属性相关数据
+      addAttributeDia: false,
+      addAttributeForm: {
         name: '',
         value: '',
-        remarks: '',
-        current: '',
-        currentAlterParameterName: ''
+        current: ''
       },
-      isSubmit: false
+      // 表单验证规则
+      addAttributeRules: {
+        name: [{ required: true, message: '请填写属性名', trigger: 'blur' }],
+        value: [
+          {
+            required: true,
+            message: '请填写属性值或至少保留一个属性值',
+            trigger: 'blur'
+          }
+        ]
+      },
+
+      // 商品分类改变相关数据
+      oldClassification: ''
     }
   },
 
@@ -588,15 +397,18 @@ export default {
     this.getLocalStorage()
     this.getClassification()
     this.$store.commit('setActiveMenu', this.$route.path)
-    this.$nextTick(() => {
-      this.$refs.goodsName.$refs.input.focus()
-    })
   },
 
   // 生命周期钩子 mounted
   mounted () {
     // 为页面绑定刷新和关闭事件
     window.addEventListener('beforeunload', e => this.beforeunloadHandler(e))
+    // 每半分钟自动保存商品信息，防止数据丢失
+    // this.timer = setInterval(() => {
+    //   this.temporarySaveDataToLocalStorage(
+    //     '商品数据已经自动保存到浏览器localStorage中!'
+    //   )
+    // }, 30 * 1000)
   },
 
   // 生命周期钩子 destroyed
@@ -616,6 +428,7 @@ export default {
         window.onbeforeunload = null
       }
     },
+
     // 获取分类列表
     getClassification () {
       this.$axios.get('/get/classification').then(res => {
@@ -625,26 +438,19 @@ export default {
       })
     },
 
+    // 记录改变前的商品分类
+    rememberClassification () {
+      this.oldClassification = this.form.classification
+    },
+
     // 获取 localStorage 的值赋值给组件数据
     getLocalStorage () {
       if (window.localStorage.getItem('addGoodsData-form')) {
         this.form = JSON.parse(window.localStorage.getItem('addGoodsData-form'))
       }
-      if (
-        window.localStorage.getItem('addGoodsData-checkedAttributeValueList')
-      ) {
-        this.checkedAttributeValueList = JSON.parse(
-          window.localStorage.getItem('addGoodsData-checkedAttributeValueList')
-        )
-      }
       if (window.localStorage.getItem('addGoodsData-classList')) {
         this.classList = JSON.parse(
           window.localStorage.getItem('addGoodsData-classList')
-        )
-      }
-      if (window.localStorage.getItem('addGoodsData-attributeList')) {
-        this.attributeList = JSON.parse(
-          window.localStorage.getItem('addGoodsData-attributeList')
         )
       }
       if (window.localStorage.getItem('addGoodsData-fileList')) {
@@ -652,11 +458,6 @@ export default {
           window.localStorage.getItem('addGoodsData-fileList')
         )
         this.tmpFileList = this.fileList
-      }
-      if (window.localStorage.getItem('addGoodsData-bodyParameterList')) {
-        this.bodyParameterList = JSON.parse(
-          window.localStorage.getItem('addGoodsData-bodyParameterList')
-        )
       }
       if (window.localStorage.getItem('addGoodsData-mainParameterList')) {
         this.mainParameterList = JSON.parse(
@@ -670,53 +471,137 @@ export default {
           window.localStorage.getItem('addGoodsData-sizeAndWeightParameterList')
         )
       }
-      if (this.form.classification) {
-        this.getAttribute(() => {
-          if (
-            window.localStorage.getItem(
-              'addGoodsData-checkedAttributeValueList'
-            )
-          ) {
-            this.checkedAttributeValueList = JSON.parse(
-              window.localStorage.getItem(
-                'addGoodsData-checkedAttributeValueList'
-              )
-            )
+      if (window.localStorage.getItem('GoodsParameter-Form-parameter')) {
+        let parameter = JSON.parse(
+          window.localStorage.getItem('GoodsParameter-Form-parameter')
+        )
+        Object.keys(parameter).forEach(item => {
+          for (let i = 0; i < parameter[item].value.length; i++) {
+            if (parameter[item].value[i].value === '') {
+              parameter[item].value.splice(i, 1)
+              i--
+            }
+          }
+          if (parameter[item].value.length <= 0) {
+            delete parameter[item]
           }
         })
+        this.form.parameter = parameter
       }
     },
 
     // 商品分类值改变时触发
-    classificationChange () {
-      this.getAttribute()
-    },
-
-    // 根据分类获取属性
-    getAttribute (callback) {
-      this.$axios
-        .get('/get/attribute/withclass', {
-          params: {
-            belong_classification: this.form.classification
+    classificationChange (val) {
+      let oldClassification = this.oldClassification
+      if (oldClassification === '') {
+        return
+      }
+      let newClassification = val
+      this.form.classification = oldClassification
+      this.$confirm('改变分类会清空商品参数数据且无法恢复, 是否继续?', '警告', {
+        confirmButtonText: '取消改变',
+        cancelButtonText: '确定改变',
+        type: 'error'
+      })
+        .then(() => {
+          this.form.classification = oldClassification
+          this.$refs.classificationSelect.blur()
+        })
+        .catch(() => {
+          this.form.classification = newClassification
+          this.$refs.classificationSelect.blur()
+          this.form.parameter = {}
+          window.localStorage.setItem(
+            'addGoodsData-form',
+            JSON.stringify(this.form)
+          )
+          if (window.localStorage.getItem('GoodsParameter-Form-parameter')) {
+            window.localStorage.removeItem('GoodsParameter-Form-parameter')
           }
         })
-        .then(res => {
-          this.attributeList = res.data.data.attribute_list
-          this.checkedAttributeValueList = []
-          if (callback && typeof callback === 'function') {
-            callback()
+    },
+
+    // 添加、修改商品属性
+    addAttribute (formName) {
+      this.$refs[formName].validate(valid => {
+        if (valid) {
+          // 添加商品属性
+          if (this.addAttributeForm.current === '') {
+            let nameArr = this.addAttributeForm.name.split('。')
+            let valueArr = this.addAttributeForm.value.split('。')
+            if (nameArr.length !== valueArr.length) {
+              this.$message.error(
+                '属性名个数和属性值组数对应不上，请检查后再添加'
+              )
+            } else {
+              // 判断属性名和属性值是否为空
+              valueArr.forEach((item, index) => {
+                if (item.trim() === '' || nameArr[index].trim() === '') {
+                  return this.$message.error('属性名和属性值禁止为空！')
+                }
+              })
+
+              // 遍历属性名和属性值，将其合并添加至表格中
+              valueArr.forEach((item, index) => {
+                // 去除属性值中的空白项
+                let value = item.split(',').filter(item => {
+                  return item !== undefined && item.trim() !== ''
+                })
+                item = value.join(',')
+
+                this.form.attribute.forEach(att => {
+                  if (att.name === nameArr[index]) {
+                    item = att.value.join(',') + item
+                    att.value = [...new Set(item.split(','))]
+                    item = ''
+                  }
+                })
+                if (item !== '') {
+                  this.form.attribute.push({
+                    name: nameArr[index],
+                    value: [...new Set(item.split(','))]
+                  })
+                }
+              })
+              this.addAttributeDia = false
+            }
+          } else {
+            // 修改商品属性
+            this.form.attribute.forEach((item, index) => {
+              if (item.name === this.addAttributeForm.current) {
+                let value = [...new Set(this.addAttributeForm.value.split(','))]
+                // 去除属性值中的空白项
+                value = value.filter(item => {
+                  return item !== undefined && item.trim() !== ''
+                })
+                let obj = {
+                  name: this.addAttributeForm.name,
+                  value
+                }
+                this.form.attribute.splice(index, 1, obj)
+                this.addAttributeDia = false
+              }
+            })
           }
-        })
+        } else {
+          return false
+        }
+      })
     },
 
-    // 前往添加分类页面
-    toAddClassification () {
-      this.$router.push({ name: 'classification' })
+    // 清空添加、修改商品属性表单
+    clearAddAttributeForm () {
+      this.addAttributeForm.name = ''
+      this.addAttributeForm.value = ''
+      this.addAttributeForm.current = ''
     },
 
-    // 前往添加分类属性页面
-    toAddattribute () {
-      this.$router.push({ name: 'attribute' })
+    // 前往添加商品参数页面
+    toAddParams () {
+      this.temporarySaveDataToLocalStorage()
+      this.$router.push({
+        path: '/goods/all/parameter?classification=' + this.form.classification
+      })
     },
 
     // 图片上传之前触发该方法，用户校验文件类型和文件大小
@@ -758,124 +643,6 @@ export default {
       this.dialogVisible = true
     },
 
-    // 显示添加参数对话框
-    showAddParameterDia (current) {
-      this.parameterForm.current = current
-      this.parameterDialogVisible = true
-    },
-
-    // 关闭添加对话框触发
-    closeDia () {
-      this.parameterForm.name = ''
-      this.parameterForm.value = ''
-      this.parameterForm.remarks = ''
-      this.parameterForm.current = ''
-      this.parameterForm.currentAlterParameterName = ''
-    },
-
-    // 添加参数
-    addParameter () {
-      let { name, value, remarks, current } = this.parameterForm
-      if (name.trim() === '') {
-        return this.$message.error('参数名不能为空！')
-      } else if (value.trim() === '') {
-        return this.$message.error('参数值不能为空！')
-      } else {
-        let flag = true
-        this[current].forEach(item => {
-          if (item.name === name) {
-            flag = false
-            return this.$message.error('参数值已存在！')
-          }
-        })
-        if (flag) {
-          this[current].push({
-            name,
-            value,
-            remarks
-          })
-          this.parameterDialogVisible = false
-        }
-      }
-    },
-
-    // 显示修改参数对话框
-    showAlterDia (current, parameter) {
-      this.parameterForm.name = parameter.name
-      this.parameterForm.currentAlterParameterName = parameter.name
-      this.parameterForm.value = parameter.value
-      this.parameterForm.remarks = parameter.remarks
-      this.parameterForm.current = current
-      this.parameterDialogVisible2 = true
-    },
-
-    // 修改参数
-    alterParameter () {
-      let {
-        name,
-        value,
-        remarks,
-        current,
-        currentAlterParameterName
-      } = this.parameterForm
-      if (name.trim() === '') {
-        return this.$message.error('参数名不能为空！')
-      } else if (value.trim() === '') {
-        return this.$message.error('参数值不能为空！')
-      } else {
-        let flag = true
-        this[current].forEach(item => {
-          if (item.name === name && name !== currentAlterParameterName) {
-            flag = false
-            return this.$message.error('参数值已存在！')
-          }
-        })
-        if (flag) {
-          let newArr = []
-          this[current].forEach((item, index) => {
-            if (item.name === currentAlterParameterName) {
-              newArr.push({
-                name,
-                value,
-                remarks
-              })
-            } else {
-              newArr.push(item)
-            }
-          })
-          this[current] = newArr
-          this.$message.success('参数值修改成功！')
-          this.parameterDialogVisible2 = false
-        }
-      }
-    },
-
-    // 删除参数
-    deleteParameter (current, name) {
-      this.$confirm(`是否删除参数(${name})?`, '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      })
-        .then(() => {
-          this[current].forEach((item, index) => {
-            if (item.name === name) {
-              this[current].splice(index, 1)
-              this.$message({
-                type: 'success',
-                message: '删除成功!'
-              })
-            }
-          })
-        })
-        .catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消删除'
-          })
-        })
-    },
-
     // 清空表单数据
     clearFormData () {
       this.$confirm(
@@ -899,13 +666,8 @@ export default {
           this.form.details = ''
           this.form.attribute = []
           this.form.parameter = {}
-          this.attributeList = []
-          this.checkedAttributeValueList = []
           this.fileList = []
           this.tmpFileList = []
-          this.bodyParameterList = []
-          this.mainParameterList = []
-          this.sizeAndWeightParameterList = []
           this.$message({
             type: 'success',
             message: '清除成功!'
@@ -920,57 +682,34 @@ export default {
     },
 
     // 临时保存商品数据到 localStorage 中
-    temporarySaveDataToLocalStorage () {
+    temporarySaveDataToLocalStorage (msg) {
       this.tmpFileList.forEach(item => {
         item.name = '点击预览图片'
       })
       this.fileList = this.tmpFileList
-      console.log(this.tmpFileList)
       window.localStorage.setItem(
         'addGoodsData-form',
         JSON.stringify(this.form)
-      )
-      window.localStorage.setItem(
-        'addGoodsData-checkedAttributeValueList',
-        JSON.stringify(this.checkedAttributeValueList)
       )
       window.localStorage.setItem(
         'addGoodsData-classList',
         JSON.stringify(this.classList)
       )
       window.localStorage.setItem(
-        'addGoodsData-attributeList',
-        JSON.stringify(this.attributeList)
-      )
-      window.localStorage.setItem(
         'addGoodsData-fileList',
         JSON.stringify(this.fileList)
       )
-      window.localStorage.setItem(
-        'addGoodsData-bodyParameterList',
-        JSON.stringify(this.bodyParameterList)
+      this.$message.success(
+        typeof msg === 'string' ? msg : '商品数据已临时保存到 localStorage 中！'
       )
-      window.localStorage.setItem(
-        'addGoodsData-mainParameterList',
-        JSON.stringify(this.mainParameterList)
-      )
-      window.localStorage.setItem(
-        'addGoodsData-sizeAndWeightParameterList',
-        JSON.stringify(this.sizeAndWeightParameterList)
-      )
-      this.$message.success('保存成功！')
     },
 
     // 清除保存到 localStorage 的商品数据
     clearDataInLocalStorage () {
       window.localStorage.removeItem('addGoodsData-form')
-      window.localStorage.removeItem('addGoodsData-checkedAttributeValueList')
       window.localStorage.removeItem('addGoodsData-classList')
-      window.localStorage.removeItem('addGoodsData-attributeList')
       window.localStorage.removeItem('addGoodsData-fileList')
-      window.localStorage.removeItem('addGoodsData-bodyParameterList')
-      window.localStorage.removeItem('addGoodsData-mainParameterList')
-      window.localStorage.removeItem('addGoodsData-sizeAndWeightParameterList')
+      window.localStorage.removeItem('GoodsParameter-Form-parameter')
     },
 
     // 提交商品到后台数据库保存
@@ -1001,33 +740,6 @@ export default {
       } else if (this.fileList.length <= 0) {
         return this.$message.error('必须要上传商品图片!')
       } else {
-        // 整理 attribute
-        let attribute = []
-        this.checkedAttributeValueList.forEach(item => {
-          let arr = item.split('-attributeName-')
-          if (attribute.length === 0) {
-            attribute.push({
-              name: arr[0],
-              value: arr[1]
-            })
-          } else {
-            let index = 0
-            for (let i = 0; i < attribute.length; i++, index++) {
-              if (attribute[i].name === arr[0]) {
-                attribute[i].value = attribute[i].value + ',' + arr[1]
-                break
-              }
-            }
-            if (index === attribute.length) {
-              attribute.push({
-                name: arr[0],
-                value: arr[1]
-              })
-            }
-          }
-        })
-        this.form.attribute = attribute
-
         if (this.form.attribute.length <= 0) {
           return this.$message.error('必须要设置商品参数!')
         } else {
@@ -1046,11 +758,6 @@ export default {
             this.form.original_price = this.form.price
           }
 
-          // 整理商品参数
-          this.form.parameter.body = this.bodyParameterList
-          this.form.parameter.main = this.mainParameterList
-          this.form.parameter.size_and_weight = this.sizeAndWeightParameterList
-
           // 发送保存请求
           this.$axios.post('/add/goods', this.form).then(res => {
             if (res.data.meta.status === 200) {
@@ -1065,13 +772,70 @@ export default {
           })
         }
       }
+    },
+
+    // 删除商品属性值
+    handleClose (name, tag) {
+      this.$confirm(`是否要删除${name}中的${tag}?`, '提示', {
+        confirmButtonText: '确定删除',
+        cancelButtonText: '取消删除',
+        type: 'warning'
+      })
+        .then(() => {
+          this.form.attribute.forEach(item => {
+            if (item.name === name) {
+              if (item.value.length <= 1) {
+                this.$message.error('至少保留一个属性值！')
+              } else {
+                item.value.splice(item.value.indexOf(tag), 1)
+              }
+            }
+          })
+        })
+        .catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          })
+        })
+    },
+
+    // 删除商品属性
+    deleteAttribute (name) {
+      this.$confirm(`是否要删除商品属性${name}?`, '提示', {
+        confirmButtonText: '确定删除',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          this.form.attribute.forEach((item, index) => {
+            if (item.name === name) {
+              this.form.attribute.splice(index, 1)
+            }
+          })
+          this.$message.success(`删除属性${name}成功！`)
+        })
+        .catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          })
+        })
+    },
+
+    // 显示商品参数编辑对话框
+    showAddAttributeDia (name, value) {
+      this.addAttributeForm.current = name
+      this.addAttributeForm.name = name
+      this.addAttributeForm.value = value.join(',')
+      this.addAttributeDia = true
     }
   },
 
   // 导航离开该组件的对应路由时调用
   beforeRouteLeave (to, from, next) {
     // 导航离开该组件的对应路由时调用
-    if (to.name !== 'addgoods' && !this.isSubmit) {
+    if (to.name !== 'addgoods' && !this.isSubmit && to.name !== 'parameter') {
       this.$confirm('跳转到其他页面会清空当前表单数据, 是否继续跳转?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -1083,6 +847,9 @@ export default {
             this.beforeunloadHandler(e)
           )
           window.onbeforeunload = null
+          // 清除定时器
+          clearInterval(this.timer)
+          this.timer = null
           next()
         })
         .catch(() => {
@@ -1093,6 +860,9 @@ export default {
           this.$store.commit('setActiveMenu', '/goods/manage/addgoods')
         })
     } else {
+      // 清除定时器
+      clearInterval(this.timer)
+      this.timer = null
       next()
     }
   }
@@ -1125,34 +895,30 @@ export default {
       display: inline-block;
     }
 
-    .add-attribute-btn {
-      display: inline-block;
-    }
-
-    .add-attribute-btn {
-      margin-top: 20px;
-    }
-
-    .goods-parameter {
-      .main {
-        margin-top: 50px;
-      }
-
-      .size-and-weight {
-        margin-top: 50px;
-      }
-
-      .title {
-        font-size: 20px;
-        font-weight: 700;
-        font-family: FZZJ, Georgia, 'Times New Roman', Times, serif;
-        margin-bottom: 12px;
-      }
-    }
-
     ul.el-upload-list {
       width: 60%;
       max-width: 500px;
+    }
+
+    .el-tag {
+      margin-bottom: 5px;
+
+      &:not(:last-child) {
+        margin-right: 10px;
+      }
+    }
+
+    .button-new-tag {
+      margin-left: 10px;
+      height: 32px;
+      line-height: 30px;
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+    .input-new-tag {
+      width: 90px;
+      margin-left: 10px;
+      vertical-align: bottom;
     }
   }
 
@@ -1162,6 +928,41 @@ export default {
   }
   input[type='number'] {
     -moz-appearance: textfield;
+  }
+
+  .parameter-item {
+    padding: 0;
+    .el-card__body {
+      padding: 0;
+    }
+
+    .parameter-name {
+      font-size: 20px;
+      font-weight: 700;
+      font-family: FZZJ, Georgia, 'Times New Roman', Times, serif;
+      background-color: #f9f9f9;
+      padding: 0 0 0 20px;
+    }
+
+    .parameter-list {
+      display: flex;
+      border-bottom: 1px solid#f2f2f2;
+
+      .parameter-title {
+        width: 200px;
+        padding-left: 20px;
+        border-right: 1px solid#f2f2f2;
+        box-sizing: border-box;
+      }
+
+      .parameter-value {
+        width: 100%;
+        padding-right: 20px;
+        box-sizing: border-box;
+        padding-left: 20px;
+        color: #999999;
+      }
+    }
   }
 }
 </style>

@@ -2,7 +2,7 @@
 import Vue from 'vue'
 
 Vue.filter('fmtAmount', price => {
-  if (!price) {
+  if (!price && price !== 0 && price !== '0') {
     return '金额格式错误！'
   }
   let decimal = price.toString().split('.')[1]
