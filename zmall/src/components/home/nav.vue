@@ -2,7 +2,7 @@
   <div class="nav-top xmf-flex">
     <el-menu class="el-menu-demo nav-menu" mode="horizontal" :router="true">
       <el-menu-item
-        :index="'goods/list?classification=' + item.class_path"
+        :index="'goods/list?classification=' + item.class_name"
         class="item"
         v-for="item in class_list"
         :key="item._id"

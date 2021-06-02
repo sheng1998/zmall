@@ -19,14 +19,13 @@
       </el-card>
     </div>
 
-    <!-- 秒杀区域 -->
-    <xmf-seckill></xmf-seckill>
-
     <!-- 热销商品区域 -->
     <xmf-hot-goods></xmf-hot-goods>
 
+    <xmf-recommend-goods></xmf-recommend-goods>
+
     <!-- 猜你喜欢区域 -->
-    <xmf-guess-you-like></xmf-guess-you-like>
+    <!-- <xmf-guess-you-like></xmf-guess-you-like> -->
 
     <!-- 尾部 -->
     <xmf-footer></xmf-footer>
@@ -39,27 +38,31 @@ import xmfShoppingCar from '../../components/shoppingCar/shoppingCar'
 import xmfHeader from '../../components/header/header'
 import xmfNav from '../../components/home/nav'
 import xmfCarousel from '../../components/home/carousel'
-import xmfSeckill from '../../components/home/seckill'
 import xmfHotGoods from '../../components/home/hotGoods'
-import xmfGuessYouLike from '../../components/home/guessYouLike'
+import xmfRecommendGoods from '../../components/goods/recommend'
+// import xmfGuessYouLike from '../../components/home/guessYouLike'
 import xmfFooter from '../../components/footer/footer'
 import xmfFixedBottom from '../../components/fixedBottom/fixedBottom'
 export default {
   data () {
     return {}
   },
+
   created () {},
+
   mounted () {},
+
   methods: {},
+
   components: {
     xmfBackTop,
     xmfShoppingCar,
     xmfHeader,
     xmfNav,
     xmfCarousel,
-    xmfSeckill,
     xmfHotGoods,
-    xmfGuessYouLike,
+    xmfRecommendGoods,
+    // xmfGuessYouLike,
     xmfFooter,
     xmfFixedBottom
   }

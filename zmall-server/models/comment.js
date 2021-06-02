@@ -1,9 +1,8 @@
-// 订单表模型设置
 let mongoose = require('mongoose')
 
 let Schema = mongoose.Schema
 
-let orderSchema = new Schema({
+let commentSchema = new Schema({
     goods_id: {
         type: String,
         required: true
@@ -16,25 +15,28 @@ let orderSchema = new Schema({
         type: String,
         required: true
     },
-    price: {
+    text: {
+        type: String,
+        required: true
+    },
+    img_list: {
+        type: Array
+    },
+    has_img: {
+        type: Number,
+        default: 0,
+        enum: [1, 0]
+    },
+    stars: {
         type: Number,
         required: true
     },
-    number: {
+    shopkeeper_comment: {
+        type: Object
+    },
+    praise: {
         type: Number,
-        required: true
-    },
-    total_price: {
-        type: Number,
-        required: true
-    },
-    delivery: {
-        type: Object,
-        required: true
-    },
-    goods_info: {
-        type: Object,
-        required: true
+        default: 0
     },
     is_delete: {
         type: Number,
@@ -48,4 +50,4 @@ let orderSchema = new Schema({
     }
 })
 
-module.exports = mongoose.model('Order', orderSchema)
+module.exports = mongoose.model('Comment', commentSchema)

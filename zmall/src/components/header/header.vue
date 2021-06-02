@@ -3,16 +3,20 @@
     <el-row style="height: 100%;">
       <!-- 商城图标 -->
       <el-col :span="5" class="my-home-logo xmf-flex">
-        <el-avatar :size="40" :src="logo_url">
-          <img
-            src="http://127.0.0.1:3002/uploads/user/error-avatar/0fc7d20532fdaf769a25683617711.png"
-          />
-        </el-avatar>
+        <router-link to="/">
+          <el-avatar :size="40" :src="logo_url">
+            <img
+              src="http://127.0.0.1:3002/uploads/user/error-avatar/0fc7d20532fdaf769a25683617711.png"
+            />
+          </el-avatar>
+        </router-link>
       </el-col>
 
       <!-- 商城名字 -->
       <el-col :span="5" class="logo-font">
-        <img src="../../../static/image/font_img/font.png" alt="" />
+        <router-link to="/">
+          <img src="../../../static/image/font_img/font.png" alt=""
+        /></router-link>
       </el-col>
 
       <!-- 搜索框 -->
@@ -20,10 +24,15 @@
         <div class="search">
           <el-input
             placeholder="Search"
-            v-model="searcVal"
+            v-model="query"
             prefix-icon="el-icon-search"
+            @keyup.enter.native="searchGoodsList"
           >
-            <el-button slot="append" icon="el-icon-search"></el-button>
+            <el-button
+              slot="append"
+              icon="el-icon-search"
+              @click="searchGoodsList"
+            ></el-button>
           </el-input>
         </div>
       </el-col>
@@ -70,9 +79,15 @@
 export default {
   data () {
     return {
-      searcVal: '',
+      // 搜索内容
+      query: '',
+
+      // 是否已经登录
       isLogin: false,
-      logo_url: '',
+
+      // logo
+      logo_url: 'http://127.0.0.1:3002/uploads/logo/2f6938c0c02511eb96fbc19a36612af3.png',
+
       personalUrl: '',
       orderUrl: '',
       user_id: '',
@@ -81,6 +96,7 @@ export default {
   },
 
   created () {
+    this.query = this.$route.query.query || ''
     this.judgingLoginStatus()
     this.$axios.get('/get/logo').then(res => {
       this.logo_url = res.data.data.url
@@ -136,6 +152,22 @@ export default {
         offset: 80
       })
       this.$router.push({ name: 'login' })
+    },
+
+    // 搜索商品
+    searchGoodsList () {
+      let str = this.$route.query.classification
+        ? `classification=${this.$route.query.classification}&`
+        : ''
+      if (this.query !== '') {
+        this.$router.push({
+          path: '/goods/list?' + str + 'query=' + this.query
+        })
+      } else {
+        this.$router.push({
+          path: '/goods/list?' + str
+        })
+      }
     }
   }
 }

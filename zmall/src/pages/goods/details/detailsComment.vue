@@ -1,31 +1,5 @@
 <template>
   <div class="details-comment">
-    <!-- 评论顶部 -->
-    <div class="top">
-      <div class="left">
-        <div class="content">99%</div>
-        <div class="describe">好评度</div>
-      </div>
-      <div class="right">
-        <el-checkbox-group
-          class="my-checkbbox"
-          v-model="evaluateList"
-          size="mini"
-        >
-          <el-checkbox
-            v-for="item in allEvaluate"
-            :key="item.value"
-            :label="item.value"
-            border
-            @change="fun(item.value)"
-          >
-            <span>{{ item.value }}</span>
-            <span>{{ item.number > 1000 ? '1000+' : item.number }}</span>
-          </el-checkbox>
-        </el-checkbox-group>
-      </div>
-    </div>
-
     <!-- 评论导航菜单 -->
     <div class="comment-nav">
       <el-checkbox-group v-model="commentNavList" :min="1" :max="2">
@@ -52,61 +26,43 @@
         <!-- left -->
         <div class="left">
           <div class="user-avatar">
-            <el-image :src="item.user_avatar" fit="contain"></el-image>
+            <el-image :src="item.user.avatar"></el-image>
           </div>
-          <div class="username">{{ item.username }}</div>
+          <div class="username">{{ item.user.name }}</div>
         </div>
 
         <!-- right -->
         <div class="right">
           <div class="right-top">
-            <div class="comment-stars">我是星星{{ item.stars }}</div>
+            <div class="comment-stars">
+              <el-rate
+                v-model="item.comment.stars"
+                disabled
+                text-color="#ff9900"
+              >
+              </el-rate>
+            </div>
             <div class="xmf-flex-only">
-              <div class="created_time">{{ item.created_time }}</div>
-              <div class="praise">
-                <span>
-                  <i class="iconfont icondianzan"></i>
-                </span>
-                <span>
-                  {{ item.praises }}
-                </span>
-              </div>
+              <div class="created_time">{{ item.comment.created_time | fmtdate2 }}</div>
             </div>
           </div>
 
           <div class="right-center">
-            <div class="content" v-if="item.text">{{ item.text }}</div>
-            <div class="comment-image" v-if="item.imgList.length > 0">
+            <div class="content" v-if="item.comment.text">
+              {{ item.comment.text }}
+            </div>
+            <div class="comment-image" v-if="item.comment.img_list.length > 0">
               <el-image
                 :src="img"
                 fit="contain"
-                v-for="img in item.imgList"
+                v-for="img in item.comment.img_list"
                 :key="img"
               ></el-image>
             </div>
           </div>
 
           <div class="right-bottom">
-            <div class="product">{{ item.product }}</div>
-          </div>
-
-          <div
-            class="service_reply xmf-flex-only"
-            v-if="item.service_reply.text"
-          >
-            <div class="left">
-              <el-image :src="item.service_reply.img" fit="contain"></el-image>
-            </div>
-            <div class="main">
-              <div class="name">{{ item.service_reply.name }}</div>
-              <div class="text">{{ item.service_reply.text }}</div>
-              <div class="praises">
-                <span>
-                  <i class="iconfont icondianzan"></i>
-                </span>
-                <span> ( {{ item.service_reply.praises }} ) </span>
-              </div>
-            </div>
+            <div class="product">{{ item.comment.goods_attribute }}</div>
           </div>
         </div>
       </div>
@@ -118,34 +74,11 @@
 export default {
   data () {
     return {
+      goodsId: '',
       evaluateList: [],
       commentNavList: [],
-      allEvaluate: [
-        {
-          value: '外观不错',
-          number: 1000
-        },
-        {
-          value: '物流不错',
-          number: 700
-        },
-        {
-          value: '屏幕不错',
-          number: 566
-        },
-        {
-          value: '服务号',
-          number: 76892
-        },
-        {
-          value: '音质很好',
-          number: 346
-        },
-        {
-          value: '内存很好',
-          number: 723
-        }
-      ],
+
+      // 评论导航栏
       allCommentNav: [
         {
           value: '全部',
@@ -156,89 +89,45 @@ export default {
           number: 123
         },
         {
-          value: '最新评论',
-          number: 123
-        },
-        {
           value: '有图',
           number: 123
         }
       ],
-      commentList: [
-        {
-          id: '1',
-          goods_id: '1',
-          product: '我是产品呀',
-          username: '我是名字',
-          user_avatar:
-            'https://res.vmallres.com/rms/comment/image/U0341/77C131E24773813C10BAEE10D6FFC9AC822089CA0C3D2030E7C3DEAF7C57E252/802b65ca69007c08b81d7ed4.jpg',
-          stars: 3.5,
-          created_time: '2020-12-20 12:00:00',
-          praises: 1,
-          text:
-            '好产品会说话，太难买到了，真心喜欢。不容易啊，从P40到Mate40再到MATE X2，终于全家人都换成华为手机了，支持国货首选华为，除非买不到，不然以后换手机肯定就是华为。产品的折叠设计秒杀市面上所有的折叠手机。',
-          imgList: [
-            'https://res.vmallres.com/rms/comment/image/U0341/77C131E24773813C10BAEE10D6FFC9AC822089CA0C3D2030E7C3DEAF7C57E252/100/CA4C9F7CEF9443F2A5570B54.png',
-            'https://res.vmallres.com/rms/comment/image/U0341/77C131E24773813C10BAEE10D6FFC9AC822089CA0C3D2030E7C3DEAF7C57E252/100/FC8AEE51727162EA7FBA24F6.jpg',
-            'https://res.vmallres.com/rms/comment/image/U0341/77C131E24773813C10BAEE10D6FFC9AC822089CA0C3D2030E7C3DEAF7C57E252/100/7D6A22F66097EA1895618163.png'
-          ],
-          service_reply: {
-            name: '这是客服名字',
-            text: '这是客服评论',
-            img:
-              'https://res.vmallres.com//uomcdn/CN/pms/productSales/202105/temp/E18CE3F7FCA9A6ACC3AC0FE3625A04F2.png',
-            praises: 0
-          }
-        },
-        {
-          id: '2',
-          goods_id: '2',
-          product: '我是产品呀2',
-          username: '我是名字',
-          user_avatar:
-            'https://res.vmallres.com/rms/comment/image/U0466/5dfdc11efb06fae57ce41e2e3338f0b3/9d5673605c46d70dc6156901.jpg',
-          stars: 3.5,
-          created_time: '2020-12-20 12:00:00',
-          praises: 1,
-          text: '',
-          imgList: [
-            'https://res.vmallres.com/rms/comment/image/U0341/77C131E24773813C10BAEE10D6FFC9AC822089CA0C3D2030E7C3DEAF7C57E252/100/CA4C9F7CEF9443F2A5570B54.png',
-            'https://res.vmallres.com/rms/comment/image/U0341/77C131E24773813C10BAEE10D6FFC9AC822089CA0C3D2030E7C3DEAF7C57E252/100/FC8AEE51727162EA7FBA24F6.jpg',
-            'https://res.vmallres.com/rms/comment/image/U0341/77C131E24773813C10BAEE10D6FFC9AC822089CA0C3D2030E7C3DEAF7C57E252/100/7D6A22F66097EA1895618163.png'
-          ],
-          service_reply: {}
-        },
-        {
-          id: '3',
-          goods_id: '3',
-          product: '我是产品呀4',
-          username: '我是名字',
-          user_avatar:
-            'https://res.vmallres.com/rms/comment/image/U0466/5dfdc11efb06fae57ce41e2e3338f0b3/9d5673605c46d70dc6156901.jpg',
-          stars: 3.5,
-          created_time: '2020-12-20 12:00:00',
-          praises: 1,
-          text:
-            '好产品会说话，太难买到了，真心喜欢。不容易啊，从P40到Mate40再到MATE X2，终于全家人都换成华为手机了，支持国货首选华为，除非买不到，不然以后换手机肯定就是华为。产品的折叠设计秒杀市面上所有的折叠手机。',
-          imgList: [],
-          service_reply: {
-            name: '这是客服名字',
-            text: '这是客服评论',
-            img:
-              'https://res.vmallres.com//uomcdn/CN/pms/productSales/202105/temp/E18CE3F7FCA9A6ACC3AC0FE3625A04F2.png',
-            praises: 0
-          }
-        }
-      ]
+
+      // 评论列表
+      commentList: []
     }
   },
-  created () {},
+
+  created () {
+    this.goodsId = this.$route.query.goodsId
+    this.getComment()
+  },
+
   mounted () {},
+
   methods: {
+    // 获取商品评论
+    getComment () {
+      this.$axios
+        .get('/get/comment', {
+          params: {
+            id: this.goodsId
+          }
+        })
+        .then(res => {
+          if (res.data.status === 200) {
+            console.log(res.data)
+            this.commentList = res.data.commentList
+          }
+        })
+    },
+
     fun (name) {
       this.evaluateList = []
       this.evaluateList.push(name)
     },
+
     fun2 (name) {
       this.commentNavList = []
       this.commentNavList.push(name)
@@ -251,47 +140,6 @@ export default {
 .details-comment {
   margin: 0 50px;
   margin-top: 30px;
-
-  .top {
-    display: flex;
-    width: 80%;
-    margin: 0 auto;
-    margin-bottom: 15px;
-
-    .left {
-      width: 15%;
-
-      .content {
-        color: #ca141d;
-        font-size: 56px;
-        text-align: center;
-        margin-bottom: 10px;
-      }
-
-      .describe {
-        text-align: center;
-        font-size: 12px;
-      }
-    }
-
-    .right {
-      width: 85%;
-
-      .my-checkbbox {
-        .el-checkbox {
-          margin-bottom: 10px;
-        }
-
-        .el-checkbox.is-bordered + .el-checkbox.is-bordered {
-          margin-left: 0;
-        }
-
-        .el-checkbox__inner {
-          display: none;
-        }
-      }
-    }
-  }
 
   .comment-nav {
     width: 80%;

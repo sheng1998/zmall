@@ -18,6 +18,10 @@ import './filters/formattedAmount.js' // 引入金额格式化过滤器
 
 // 导入样式文件
 import 'element-ui/lib/theme-chalk/index.css' // 引入 element-ui 样式文件
+// 导入vue-quill-editor的样式文件
+import 'quill/dist/quill.core.css'
+import 'quill/dist/quill.snow.css'
+import 'quill/dist/quill.bubble.css'
 
 Vue.use(ElementUI)
 Vue.use(MyAxios)

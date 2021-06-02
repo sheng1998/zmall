@@ -4,6 +4,7 @@ let express = require('express')
 let mongoose = require('mongoose')
 // 引入 fs 模块
 let fs = require('fs');
+let moment = require('moment')
 
 // 连接 MongoDB 数据库
 mongoose.connect('mongodb://127.0.0.1:27018/zmall')
@@ -247,12 +248,8 @@ router.get('/goods/offsale', (req, res) => {
 // 添加商品
 router.post('/add/goods', (req, res) => {
     let goodsData = req.body
-    let goodsName = goodsData.goods_name.trim()
-    goodsName = goodsName.replace(/[`\\?、╲/*'"‘“”’<>|]/ig, '')
-    if (goodsName === '') {
-        goodsName = '商品图片'
-    }
-    fs.mkdir(`./uploads/goods/${goodsName}`, { // 创建目录
+    let dirName = 't' + moment().format('YYYYMMDDHHmmssSSS').toString()
+    fs.mkdir(`./uploads/goods/${dirName}`, { // 创建目录
         recursive: true
     }, err => {
         if (err) {
@@ -265,7 +262,7 @@ router.post('/add/goods', (req, res) => {
 
     img_list.forEach((item, index) => {
         let path = item
-        let newPath = `${GOODSIMGPATH}${goodsName}/${path.split('\\')[1]}`
+        let newPath = `${GOODSIMGPATH}${dirName}/${path.split('\\')[1]}`
         asyncArray.push(
             new Promise((reslove, reject) => {
                 fs.copyFile(path, `./${newPath}`, err => {
@@ -399,68 +396,57 @@ router.post('/edit/goods', (req, res) => {
         goods_form
     } = req.body
 
-    let goodsName = req.body.goods_form.goods_name.trim()
-    goodsName = goodsName.replace(/[`\\?、╲/*'"‘“”’<>|]/ig, '')
-    if (goodsName === '') {
-        goodsName = '商品图片'
-    }
-    fs.mkdir(`./uploads/goods/${goodsName}`, { // 创建目录
-        recursive: true
-    }, err => {
-        if (err) {
-            throw err
-        }
-    })
+    Goods.findById(goods_id).then(goods => {
+        if (goods) {
+            let srcAfter = goods.img_list[0].split(`/${GOODSIMGPATH}`)[1]
+            let dirName = srcAfter.split('/')[0]
 
-    let asyncArray = []
-    goods_form.img_list.forEach((item, index) => {
-        if (item.includes('/tmp_uploads/')) {
-            let path = item.split('http://127.0.0.1:3002/')[1]
-            let newPath = `${GOODSIMGPATH}${goodsName}/${item.split('/tmp_uploads/')[1]}`
-            asyncArray.push(
-                new Promise((reslove, reject) => {
-                    fs.copyFile(path, `./${newPath}`, err => {
-                        if (err) {
-                            reject(err)
-                        } else {
-                            goods_form.img_list[index] = `http://127.0.0.1:3002/${newPath}`
-                            reslove()
+            let asyncArray = []
+            goods_form.img_list.forEach((item, index) => {
+                if (item.includes('/tmp_uploads/')) {
+                    let path = item.split('http://127.0.0.1:3002/')[1]
+                    let newPath = `${GOODSIMGPATH}${dirName}/${item.split('/tmp_uploads/')[1]}`
+                    asyncArray.push(
+                        new Promise((reslove, reject) => {
+                            fs.copyFile(path, `./${newPath}`, err => {
+                                if (err) {
+                                    reject(err)
+                                } else {
+                                    goods_form.img_list[index] = `http://127.0.0.1:3002/${newPath}`
+                                    reslove()
+                                }
+                            })
+                        })
+                    )
+                }
+            })
+
+            Promise.all(asyncArray).then(() => {
+                Goods.findByIdAndUpdate(goods_id, {
+                    goods_name: goods_form.goods_name,
+                    describe: goods_form.describe,
+                    price: Number(goods_form.price),
+                    original_price: Number(goods_form.original_price),
+                    discount_price: Number(goods_form.discount_price),
+                    goods_number: Number(goods_form.goods_number),
+                    classification: goods_form.classification,
+                    img_list: goods_form.img_list,
+                    details: goods_form.details,
+                    attribute: goods_form.attribute,
+                    parameter: goods_form.parameter,
+                    last_modify_time: new Date
+                }).then(() => {
+                    res.json({
+                        data: {},
+                        meta: {
+                            msg: '修改商品成功！',
+                            status: 200
                         }
                     })
                 })
-            )
+            })
         }
     })
-
-    Promise.all(asyncArray).then(() => {
-        Goods.findByIdAndUpdate(goods_id, {
-            goods_name: goods_form.goods_name,
-            describe: goods_form.describe,
-            price: Number(goods_form.price),
-            original_price: Number(goods_form.original_price),
-            discount_price: Number(goods_form.discount_price),
-            goods_number: Number(goods_form.goods_number),
-            classification: goods_form.classification,
-            img_list: goods_form.img_list,
-            details: goods_form.details,
-            attribute: goods_form.attribute,
-            parameter: goods_form.parameter,
-            last_modify_time: new Date
-        }).then(() => {
-            res.json({
-                data: {},
-                meta: {
-                    msg: '修改商品成功！',
-                    status: 200
-                }
-            })
-        })
-    })
-
-
-
-
-
 })
 
 // 获取库存预警信息

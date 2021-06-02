@@ -12,94 +12,74 @@
     </div>
 
     <!-- 分类和商品属性 -->
-    <el-card class="class-attribute-card">
-      <div class="class-attribute">
+    <el-card class="classification-sort-card">
+      <div class="classification-and-sort">
         <!-- 分类名 -->
-        <div class="class-title attribute-item fenlei">
-          <div class="attribute-name">分类：</div>
-          <div>
-            <el-checkbox-group
-              v-model="classCheckList"
-              class="class-item item-checkbox"
+        <div class="classification item1">
+          <div class="title">分类：</div>
+          <div class="classification-body">
+            <span
+              v-for="classification in classification"
+              :key="classification._id"
             >
-              <el-checkbox
-                class="item"
-                :label="'class--' + item"
-                v-for="(item, index) in classification"
-                :key="index"
-                @change="fun4(item)"
+              <router-link
+                :to="
+                  `/goods/list?classification=${classification.class_name}${
+                    $route.query.query === undefined
+                      ? ''
+                      : '&query=' + $route.query.query
+                  }`
+                "
               >
-                {{ item }}
-              </el-checkbox></el-checkbox-group
-            >
+                {{ classification.class_name }}
+              </router-link>
+            </span>
           </div>
         </div>
 
-        <!-- 分类属性 -->
-        <div
-          class="class-title attribute-item"
-          v-for="(attribute, i) in attribute"
-          :key="i"
-        >
-          <div class="attribute-name">{{ attribute.name + '：' }}</div>
-          <el-checkbox-group v-model="checkList" class="item-checkbox">
-            <el-checkbox
-              class="item"
-              :label="'attribute' + attribute.name + item + j"
-              v-for="(item, j) in attribute.item"
-              :key="j"
-              @change="fun(attribute.name, item)"
-            >
-              {{ item }}
-            </el-checkbox>
-          </el-checkbox-group>
-        </div>
-
         <!-- 排序 -->
-        <div class="class-title attribute-item sort">
-          <div class="attribute-name">排序：</div>
-          <div class="sort-item">
+        <div class="sort item1">
+          <div class="title">排序：</div>
+          <div class="sort-body">
             <el-checkbox-group v-model="sortList">
+              <!-- 综合排序 -->
               <el-checkbox
                 class="item"
-                label="sort--综合"
-                @change="fun2('sort--综合')"
+                label="total_sales"
+                @change="changeSort('total_sales')"
                 :checked="true"
               >
                 综合
               </el-checkbox>
+
+              <!-- 最新排序 -->
               <el-checkbox
                 class="item"
-                label="sort--最新"
-                @change="fun2('sort--最新')"
+                label="created_time"
+                @change="changeSort('created_time')"
               >
                 最新
               </el-checkbox>
+
+              <!-- 价格排序 -->
               <el-checkbox
                 class="item"
-                label="sort--评论数"
-                @change="fun2('sort--评论数')"
-              >
-                评论数
-              </el-checkbox>
-              <el-checkbox
-                class="item"
-                label="sort--价格"
-                @change="fun2('sort--价格')"
+                label="price"
+                @change="changeSort('price')"
               >
                 <template>
                   <div class="price">
-                    <span class="price-title" @click="fun3('toggle')"
+                    <span class="price-title" @click="priceSort('toggle')"
                       >价格</span
                     >
                     <div class="price-icon">
-                      <span @click="fun3(true)">
+                      <span @click="priceSort(true)">
                         <i
                           class="el-icon-caret-top"
                           :class="{ grey: !isPriceUp, blue: isPriceUp }"
                         ></i>
                       </span>
-                      <span @click="fun3(false)">
+                      <span @click="priceSort(false)">
                         <i
                           class="el-icon-caret-bottom"
                           :class="{ grey: isPriceUp, blue: !isPriceUp }"
@@ -110,43 +90,23 @@
                 </template>
               </el-checkbox>
             </el-checkbox-group>
-
-            <div class="price-section">
-              <div style="display: flex;">
-                <el-input
-                  type="number"
-                  prefix-icon="iconfont iconmoney"
-                  v-model="price1"
-                >
-                </el-input>
-                <div class="zhi">
-                  <span>-</span>
-                </div>
-                <el-input
-                  type="number"
-                  prefix-icon="iconfont iconmoney"
-                  v-model="price2"
-                >
-                </el-input>
-                <el-button type="primary" class="price-btn" size="mini"
-                  >确定</el-button
-                >
-              </div>
-            </div>
           </div>
         </div>
       </div>
     </el-card>
 
     <!-- 商品列表 -->
-    <el-card class="class-goods-card">
+    <el-card class="goods-list" v-if="goodsList.length > 0">
       <xmf-goods-item
         :goods="goods"
         v-for="goods in goodsList"
-        :key="goods.id"
-        :comment="true"
+        :key="goods._id"
       ></xmf-goods-item>
     </el-card>
+
+    <div class="no-goods" v-else>
+      没有找到相关宝贝，请尝试切换其他关键字搜索。
+    </div>
   </div>
 </template>
 
@@ -159,164 +119,128 @@ import xmfGoodsItem from '../../components/goods/goods'
 export default {
   data () {
     return {
+      // 商品列表
       goodsList: [],
-      goodsList1: [
-        {
-          img:
-            'https://res.vmallres.com/pimages//product/6941487203307/428_428_FE364E05A0D86CE39BE00E1EE1D18350AA8E982DFAFFC0A2mp.png',
-          title: 'HUAWEI nova 7 Pro 5G',
-          describe: '这是商品描述',
-          price: '3001.00',
-          discountPrice: '3001.00',
-          originalPrice: '3002.00',
-          comment: 565646,
-          praise: 99.99
-        },
-        {
-          img:
-            'https://res.vmallres.com/pimages//product/6941487210619/428_428_1BED94F76D33074373CB7636AC2AEB733F3754C113BF6BBDmp.png',
-          title: 'HUAWEI nova 7 Pro 5G',
-          describe: '这是商品描述',
-          price: '3001.00',
-          discountPrice: '3001.00',
-          originalPrice: '3001.00'
-        },
-        {
-          img:
-            'https://res.vmallres.com/pimages//product/6941487210619/428_428_1BED94F76D33074373CB7636AC2AEB733F3754C113BF6BBDmp.png',
-          title: 'HUAWEI nova 7 Pro 5G',
-          describe: '这是商品描述',
-          price: '3001.00',
-          discountPrice: '3001.00',
-          originalPrice: '3002.00'
-        },
-        {
-          img:
-            'https://res.vmallres.com/pimages//product/6901443395217/428_428_DDB3BD6991C465502A6B44CF2382C0CA3279375DCE416CFFmp.png',
-          title: 'HUAWEI nova 7 Pro 5G',
-          describe: '这是商品描述',
-          price: '3001.00',
-          discountPrice: '3001.00',
-          originalPrice: '3001.00'
-        },
-        {
-          img:
-            'https://res.vmallres.com/pimages//product/6941487220267/428_428_DEBB356E00934B123CDAE9CACBD70E1536224850853CCCE8mp.png',
-          title: 'HUAWEI nova 7 Pro 5G',
-          describe: '这是商品描述',
-          price: '3001.00',
-          discountPrice: '3001.00',
-          originalPrice: '3002.00'
-        },
-        {
-          img:
-            'https://res.vmallres.com/pimages//product/6941487210619/428_428_1BED94F76D33074373CB7636AC2AEB733F3754C113BF6BBDmp.png',
-          title: 'HUAWEI nova 7 Pro 5G',
-          describe: '这是商品描述',
-          price: '3001.00',
-          discountPrice: '3001.00',
-          originalPrice: '3002.00',
-          number: 0
-        },
-        {
-          img:
-            'https://res.vmallres.com/pimages//product/6941487210619/428_428_1BED94F76D33074373CB7636AC2AEB733F3754C113BF6BBDmp.png',
-          title: 'HUAWEI nova 7 Pro 5G',
-          describe: '这是商品描述',
-          price: '3001.00',
-          discountPrice: '3001.00',
-          originalPrice: '3002.00'
-        },
-        {
-          img:
-            'https://res.vmallres.com/pimages//product/6901443395217/428_428_DDB3BD6991C465502A6B44CF2382C0CA3279375DCE416CFFmp.png',
-          title: 'HUAWEI nova 7 Pro 5G',
-          describe: '这是商品描述',
-          price: '3001.00',
-          discountPrice: '3001.00',
-          originalPrice: '3002.00'
-        },
-        {
-          img:
-            'https://res.vmallres.com/pimages//product/6941487220267/428_428_DEBB356E00934B123CDAE9CACBD70E1536224850853CCCE8mp.png',
-          title: 'HUAWEI nova 7 Pro 5G',
-          describe: '这是商品描述',
-          price: '3001.00',
-          discountPrice: '3001.00',
-          originalPrice: '3002.00'
-        }
-      ],
       classCheckList: [],
-      classification: [
-        '手机',
-        '平板',
-        '电脑',
-        '笔记本',
-        '耳机',
-        '音响',
-        '路由器',
-        '显示器',
-        '照相机',
-        '打印机',
-        '投影仪',
-        '电视机',
-        '冰箱',
-        '洗衣机'
-      ],
-      checkList: [],
-      sortList: [],
-      isPriceUp: false,
-      price1: '',
-      price2: '',
-      breadcrumb: [
-        {
-          name: '111',
-          path: '/111'
-        }
-      ],
 
-      attribute: [
-        {
-          name: '屏幕尺寸',
-          item: ['4.5-5.4英寸', '5.5-5.9英寸', '6.1-6.5英寸', '6.5英寸 以上']
-        },
-        {
-          name: '运行内存',
-          item: ['2GB 以下', '2GB', '4GB', '6GB', '8GB', '8GB 以上']
-        },
-        {
-          name: '存储容量',
-          item: ['64GB 以下', '64GB', '128GB', '256GB', '256GB 以上']
-        }
-      ]
+      // 分类
+      classification: [],
+      sortList: [],
+
+      // 价格排序
+      isPriceUp: false,
+
+      // 面包屑
+      breadcrumb: [],
+
+      // 排序
+      sort: 'total_sales'
     }
   },
-  created () {},
+
+  created () {
+    // 处理面包屑
+    this.handleBreadcrumb()
+    // 获取商品分类
+    this.getClassification()
+    // 获取商品列表
+    this.getSearchGoodsList()
+  },
+
   mounted () {},
+
   methods: {
-    fun (name, value) {
-      console.log(name)
-      console.log(value)
+    // 处理面包屑
+    handleBreadcrumb () {
+      if (this.$route.query.query && this.$route.query.query !== '') {
+        this.breadcrumb = [
+          {
+            name: '商品搜索：' + this.$route.query.query,
+            path: '#'
+          }
+        ]
+      } else if (
+        this.$route.query.classification &&
+        this.$route.query.classification !== ''
+      ) {
+        this.breadcrumb = [
+          {
+            name: '商品分类：' + this.$route.query.classification,
+            path: '#'
+          }
+        ]
+      } else {
+        this.breadcrumb = [
+          {
+            name: '商品列表',
+            path: '#'
+          }
+        ]
+      }
     },
-    fun2 (value) {
+
+    // 获取商品分类
+    getClassification () {
+      this.$axios.get('/get/classification').then(res => {
+        if (res.data.meta.status === 200) {
+          this.classification = res.data.data.class_list
+        }
+      })
+    },
+
+    // 获取商品搜索结果
+    getSearchGoodsList () {
+      this.$axios
+        .get('/searchgoods', {
+          params: {
+            classification: this.$route.query.classification,
+            query: this.$route.query.query,
+            sort: this.sort
+          }
+        })
+        .then(res => {
+          if (res.data.status === 200) {
+            this.goodsList = res.data.goodsList
+          }
+        })
+    },
+
+    // 改变排序
+    changeSort (value) {
       this.sortList = []
       this.sortList.push(value)
-      console.log(this.sortList)
+      if (this.sort !== value && value !== 'price') {
+        this.sort = value
+        this.getSearchGoodsList()
+      }
     },
-    fun3 (flag) {
-      console.log(flag)
+
+    // 根据价格排序
+    priceSort (flag) {
       if (flag === 'toggle') {
         this.isPriceUp = !this.isPriceUp
       } else {
         this.isPriceUp = flag
       }
-    },
-    fun4 (item) {
-      console.log(item)
-      this.classCheckList = []
-      this.classCheckList.push(`class--${item}`)
+      this.sort = this.isPriceUp ? 'priceup' : 'pricedown'
+      this.getSearchGoodsList()
     }
   },
+
+  watch: {
+    // 监听路由变化
+    $route: {
+      handler () {
+        this.getSearchGoodsList()
+        this.handleBreadcrumb()
+        // 深度监听，同时也可监听到param参数变化
+      },
+      deep: true,
+      // 代表在wacth里声明了true之后会立即先去执行handler方法
+      immediate: false
+    }
+  },
+
   components: {
     xmfFixedBottom,
     xmfHeader,
@@ -338,13 +262,13 @@ export default {
     margin-left: 50px;
   }
 
-  .class-attribute-card {
+  .classification-sort-card {
     margin: 0 50px;
 
-    .class-attribute {
+    .classification-and-sort {
       margin: 10px 25px 20px 25px;
 
-      .attribute-item {
+      .item1 {
         padding: 15px 0;
         border-bottom: 1px solid #ddd;
 
@@ -352,7 +276,7 @@ export default {
           white-space: nowrap;
         }
 
-        .attribute-name {
+        .title {
           display: inline-block;
           font-size: 15px;
           min-width: 80px;
@@ -376,7 +300,7 @@ export default {
           }
         }
 
-        .sort-item {
+        .sort-body {
           display: inline-block;
 
           .el-checkbox-group {
@@ -414,50 +338,6 @@ export default {
               }
             }
           }
-
-          .price-section {
-            display: inline-block;
-            margin-left: 20px;
-
-            input {
-              height: 20px;
-              font-size: 12px;
-              width: 80px;
-            }
-
-            .price-btn {
-              margin-left: 5px;
-              height: 20px;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              padding-left: 8px;
-              padding-right: 8px;
-            }
-
-            .zhi {
-              margin: 0 5px;
-            }
-
-            .el-input__icon {
-              line-height: 20px;
-              font-size: 2px;
-              color: #606266;
-            }
-
-            .el-input--prefix .el-input__inner {
-              padding-left: 20px;
-            }
-
-            input[type='number'] {
-              &::-webkit-outer-spin-button,
-              &::-webkit-inner-spin-button {
-                -webkit-appearance: none;
-              }
-
-              -moz-appearance: textfield;
-            }
-          }
         }
 
         .is-checked {
@@ -474,25 +354,35 @@ export default {
       }
     }
 
-    .fenlei {
+    .classification {
       display: flex;
 
-      .class-item {
+      .classification-body span {
         display: inline-block;
-        min-width: 60px;
         font-size: 14px;
         color: #606266;
         margin-bottom: 5px;
+        cursor: pointer;
 
-        .el-checkbox__input {
-          display: none;
+        &:not(:last-child) {
+          margin-right: 35px;
         }
       }
     }
   }
 
-  .class-goods-card {
+  .goods-list {
     margin: 30px 50px 0 50px;
+  }
+
+  .no-goods {
+    margin-top: 80px;
+    margin-bottom: 100px;
+    display: flex;
+    justify-content: center;
+    font-size: 30px;
+    font-weight: 700;
+    color: #cccccc;
   }
 }
 </style>

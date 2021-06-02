@@ -356,7 +356,6 @@ export default {
       },
       classList: [], // 分类列表的数据
       fileList: [],
-      tmpFileList: [],
       dialogImageUrl: '',
       dialogVisible: false,
       isSubmit: false,
@@ -403,12 +402,12 @@ export default {
   mounted () {
     // 为页面绑定刷新和关闭事件
     window.addEventListener('beforeunload', e => this.beforeunloadHandler(e))
-    // 每半分钟自动保存商品信息，防止数据丢失
-    // this.timer = setInterval(() => {
-    //   this.temporarySaveDataToLocalStorage(
-    //     '商品数据已经自动保存到浏览器localStorage中!'
-    //   )
-    // }, 30 * 1000)
+    // 每五分钟自动保存商品信息，防止数据丢失
+    this.timer = setInterval(() => {
+      this.temporarySaveDataToLocalStorage(
+        '商品数据已经自动保存到浏览器localStorage中!'
+      )
+    }, 5 * 60 * 1000)
   },
 
   // 生命周期钩子 destroyed
@@ -457,19 +456,9 @@ export default {
         this.fileList = JSON.parse(
           window.localStorage.getItem('addGoodsData-fileList')
         )
-        this.tmpFileList = this.fileList
-      }
-      if (window.localStorage.getItem('addGoodsData-mainParameterList')) {
-        this.mainParameterList = JSON.parse(
-          window.localStorage.getItem('addGoodsData-mainParameterList')
-        )
-      }
-      if (
-        window.localStorage.getItem('addGoodsData-sizeAndWeightParameterList')
-      ) {
-        this.sizeAndWeightParameterList = JSON.parse(
-          window.localStorage.getItem('addGoodsData-sizeAndWeightParameterList')
-        )
+        this.fileList.forEach(item => {
+          item.url = item.response.data.url
+        })
       }
       if (window.localStorage.getItem('GoodsParameter-Form-parameter')) {
         let parameter = JSON.parse(
@@ -620,16 +609,12 @@ export default {
     },
 
     // 图片上传成功后触发该方法
-    handleSuccess (response) {
-      this.tmpFileList.push(response.data)
+    handleSuccess (response, file, fileList) {
+      this.fileList = fileList
     },
 
     // 文件列表移除文件触发该方法
     handleRemove (file) {
-      this.tmpFileList.forEach(item => {
-        item.name = '点击预览图片'
-      })
-      this.fileList = this.tmpFileList
       this.fileList.forEach((item, index) => {
         if (item.uid === file.uid) {
           this.fileList.splice(index, 1)
@@ -683,10 +668,6 @@ export default {
 
     // 临时保存商品数据到 localStorage 中
     temporarySaveDataToLocalStorage (msg) {
-      this.tmpFileList.forEach(item => {
-        item.name = '点击预览图片'
-      })
-      this.fileList = this.tmpFileList
       window.localStorage.setItem(
         'addGoodsData-form',
         JSON.stringify(this.form)
@@ -714,10 +695,6 @@ export default {
 
     // 提交商品到后台数据库保存
     saveGoods () {
-      this.tmpFileList.forEach(item => {
-        item.name = '点击预览图片'
-      })
-      this.fileList = this.tmpFileList
       if (this.form.goods_name.trim() === '') {
         return this.$message.error('必须填写商品名称!')
       } else if (this.form.describe.trim() === '') {
@@ -744,8 +721,9 @@ export default {
           return this.$message.error('必须要设置商品参数!')
         } else {
           // 整理商品图片列表
+          this.form.img_list = []
           this.fileList.forEach(item => {
-            this.form.img_list.push(item.tmp_path)
+            this.form.img_list.push(item.response.data.tmp_path)
           })
 
           // 整理价格

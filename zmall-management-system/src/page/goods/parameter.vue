@@ -113,7 +113,7 @@ export default {
       this.saveParameterToLocalStorate(
         '参数数据已经自动保存到浏览器localStorage中!'
       )
-    }, 30 * 1000)
+    }, 2 * 60 * 1000)
   },
 
   beforeRouteEnter (to, from, next) {

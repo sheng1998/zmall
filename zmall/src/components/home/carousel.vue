@@ -21,7 +21,6 @@ export default {
   created () {
     this.$axios.get('/carousel').then(res => {
       this.carouselList = res.data.data.carouselList
-      console.log(this.carouselList)
     })
   },
   mounted () {},

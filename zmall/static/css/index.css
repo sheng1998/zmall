@@ -82,3 +82,11 @@ input::-webkit-inner-spin-button {
 input[type='number'] {
   -moz-appearance: textfield;
 }
+
+.el-message.el-message--info {
+  z-index: 9999999!important;
+}
+
+.el-image-viewer__wrapper {
+  z-index: 999991!important;
+}

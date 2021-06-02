@@ -6,16 +6,22 @@ let mongoose = require('mongoose')
 const svgCaptcha = require('svg-captcha');
 // md5 加密包
 let md5 = require("md5");
+// 引入 fs 模块
+let fs = require('fs');
 
 // 连接 MongoDB 数据库
 mongoose.connect('mongodb://127.0.0.1:27018/zmall')
 let User = require('../models/user')
+let Goods = require('../models/goods')
 let LoginStatus = require('../models/loginStatus')
 let Logo = require('../models/logo')
 let Carousel = require('../models/carousel')
 let Classification = require('../models/classification.js')
 let Address = require('../models/address.js')
-let DAddress = require('../models/deliveryAddress')
+let Delivery = require('../models/deliveryAddress')
+let Shopcar = require('../models/shopcar')
+let Order = require('../models/order')
+let Comment = require('../models/comment')
 
 // 创建路由容器
 let router = express.Router()
@@ -582,7 +588,7 @@ router.post('/api/private/savedeliveryinfo', (req, res) => {
                     status: 201
                 })
             } else {
-                new DAddress({
+                new Delivery({
                     user_id: id,
                     name: delivery_info.name,
                     phone: delivery_info.phone,
@@ -603,7 +609,7 @@ router.post('/api/private/savedeliveryinfo', (req, res) => {
 // 根据id 获取收货地址列表
 router.get('/api/private/deliveryinfolist', (req, res) => {
     let user_id = req.query.user_id
-    DAddress.find({
+    Delivery.find({
         user_id
     }).then(data => {
         res.json({
@@ -628,7 +634,7 @@ router.post('/api/private/alterdeliveryinfo', (req, res) => {
             status: 201
         })
     } else {
-        DAddress.findByIdAndUpdate(id, {
+        Delivery.findByIdAndUpdate(id, {
             name: delivery_info.name,
             phone: delivery_info.phone,
             address_front: delivery_info.address_front,
@@ -646,7 +652,7 @@ router.post('/api/private/alterdeliveryinfo', (req, res) => {
 // 删除地址
 router.get('/api/private/deletedeliveryInfo', (req, res) => {
     let id = req.query.id
-    DAddress.findByIdAndRemove(id).then(() => {
+    Delivery.findByIdAndRemove(id).then(() => {
         res.json({
             msg: '删除成功！',
             status: 200
@@ -863,6 +869,789 @@ router.get('/api/private/checkemail', (req, res) => {
             status: 200
         })
     }
+})
+
+
+/**
+ * **************************************************
+ * 商品相关功能接口
+ * **************************************************
+ */
+// 根据id获取商品数据
+router.get('/api/private/goodsdetails', (req, res) => {
+    Goods.findById(req.query.goods_id).then(data => {
+        if (data) {
+            res.json({
+                goodsData: data,
+                msg: 'success!',
+                status: 200
+            })
+        } else {
+            res.json({
+                msg: '商品ID不存在',
+                status: 201
+            })
+        }
+    })
+})
+
+// 获取热销商品数据
+router.get('/api/private/hotsalesgoods', (req, res) => {
+    Goods.find({
+            is_delete: 0,
+            is_sale: 1
+        })
+        .sort({
+            total_sales: -1
+        })
+        .limit(30)
+        .then(goods => {
+            res.json({
+                goodsList: goods,
+                msg: 'success!',
+                status: 200
+            })
+        })
+})
+
+// 获取分类商品推荐列表
+router.get('/api/private/recommendgoods', (req, res) => {
+    let goodsList = []
+    Goods.find({
+            classification: '手机',
+            is_delete: 0,
+            is_sale: 1
+        })
+        .sort({
+            created_time: -1
+        })
+        .limit(10)
+        .then(goods1 => {
+            goodsList.push({
+                title: '手机',
+                goods_list: goods1
+            })
+            Goods.find({
+                    classification: '笔记本',
+                    is_delete: 0,
+                    is_sale: 1
+                })
+                .sort({
+                    created_time: -1
+                })
+                .limit(10)
+                .then(goods2 => {
+                    goodsList.push({
+                        title: '笔记本',
+                        goods_list: goods2
+                    })
+                    Goods.find({
+                            classification: '平板电脑',
+                            is_delete: 0,
+                            is_sale: 1
+                        })
+                        .sort({
+                            created_time: -1
+                        })
+                        .limit(10)
+                        .then(goods3 => {
+                            goodsList.push({
+                                title: '平板电脑',
+                                goods_list: goods3
+                            })
+                            res.json({
+                                goodsList,
+                                msg: 'success!',
+                                status: 200
+                            })
+                        })
+                })
+        })
+})
+
+// 商品搜索
+router.get('/api/private/searchgoods', (req, res) => {
+    let {
+        classification,
+        query,
+        sort
+    } = req.query
+    const reg = new RegExp(query, 'i')
+    let sortDirection = -1
+    if (!sort) {
+        sort = 'total_sales'
+    } else if (sort.toLowerCase() === 'createdtime' || sort.toLowerCase() === 'created_time') {
+        sort = 'created_time'
+    } else if (sort.toLowerCase() === 'priceup' || sort.toLowerCase() === 'price_up') {
+        sort = 'price'
+        sortDirection = 1
+    } else if (sort.toLowerCase() === 'pricedown' || sort.toLowerCase() === 'price_down') {
+        sort = 'price'
+        sortDirection = -1
+    } else {
+        sort = 'total_sales'
+    }
+
+    if (classification) {
+        Goods.find({
+                classification,
+                is_delete: 0,
+                is_sale: 1,
+                $or: [{
+                    goods_name: {
+                        $regex: reg
+                    }
+                }, {
+                    describe: {
+                        $regex: reg
+                    }
+                }, {
+                    classification: {
+                        $regex: reg
+                    }
+                }]
+            })
+            .sort({
+                [sort]: sortDirection
+            })
+            .then(data => {
+                res.json({
+                    goodsList: data,
+                    msg: 'success!',
+                    status: 200
+                })
+            })
+    } else {
+        Goods.find({
+                is_delete: 0,
+                is_sale: 1,
+                $or: [{
+                    goods_name: {
+                        $regex: reg
+                    }
+                }, {
+                    describe: {
+                        $regex: reg
+                    }
+                }, {
+                    classification: {
+                        $regex: reg
+                    }
+                }]
+            })
+            .sort({
+                [sort]: sortDirection
+            })
+            .then(data => {
+                res.json({
+                    goodsList: data,
+                    msg: 'success!',
+                    status: 200
+                })
+            })
+    }
+
+})
+
+/**
+ * **************************************************
+ * 购物车相关功能接口
+ * **************************************************
+ */
+
+// 将商品添加至购物车
+router.get('/api/private/addgoods/tocar', (req, res) => {
+    let {
+        user_id,
+        goods_id,
+        goods_attribute,
+        number
+    } = req.query
+    number = Number(number)
+
+    // 判断用户是否存在
+    User.findById(user_id).then(user => {
+        if (user) {
+            // 判断商品是否存在
+            Goods.findById(goods_id).then(goods => {
+                if (goods) {
+                    // 判断商品库存是否足够
+                    if (number > Number(goods.goods_number)) {
+                        return res.json({
+                            msg: '商品库存不足！',
+                            status: 201
+                        })
+                    }
+                    // 判断该商品是否存在该用户的购物车列表中
+                    Shopcar.findOne({
+                        user_id,
+                        goods_id,
+                        goods_attribute
+                    }).then(item => {
+                        if (item) {
+                            // 判断商品库存是否足够
+                            if (Number(item.number) + number > Number(goods.goods_number)) {
+                                return res.json({
+                                    msg: '商品库存不足！',
+                                    status: 201
+                                })
+                            }
+                            // 如果存在就增加购物车列表里商品的数量
+                            Shopcar.findOneAndUpdate({
+                                user_id,
+                                goods_id,
+                                goods_attribute
+                            }, {
+                                number: Number(item.number) + number
+                            }).then(() => {
+                                res.json({
+                                    msg: 'success!',
+                                    status: 200
+                                })
+                            })
+                        } else {
+                            // 如果不存在就添加至购物车列表
+                            new Shopcar({
+                                user_id,
+                                goods_id,
+                                goods_attribute,
+                                number
+                            }).save().then(() => {
+                                res.json({
+                                    msg: 'success!',
+                                    status: 200
+                                })
+                            })
+                        }
+                    })
+                } else {
+                    res.json({
+                        msg: '商品不存在！',
+                        status: 201
+                    })
+                }
+            })
+        } else {
+            res.json({
+                msg: '用户ID错误！',
+                status: 201
+            })
+        }
+    })
+})
+
+// 获取用户购物车列表
+router.get('/api/private/getgoodscarlist', (req, res) => {
+    // page_size: 页码
+    // data_number: 数据条数
+    let {
+        user_id,
+        page_size,
+        data_number
+    } = req.query
+
+    // 判断用户是否存在
+    User.findById(user_id).then(user => {
+        if (user) {
+            Shopcar.count({
+                user_id
+            }).then(num => {
+                // 获取商品图片列表、名称、描述、单价、折扣价、原价、_id
+                Shopcar.find({
+                        user_id
+                    })
+                    .skip(parseInt((page_size - 1) * data_number))
+                    .limit(parseInt(data_number))
+                    .sort({
+                        last_modify_time: -1
+                    })
+                    .exec()
+                    .then(shop => {
+                        let asyncArr = []
+                        shop.forEach(item => {
+                            asyncArr.push(
+                                new Promise((resolve, reject) => {
+                                    Goods.findById(
+                                            item.goods_id
+                                        )
+                                        .then(goods => {
+                                            resolve({
+                                                id: item._id,
+                                                goods_id: goods._id,
+                                                goods_name: goods.goods_name,
+                                                describe: goods.describe,
+                                                price: goods.price,
+                                                img_list: goods.img_list,
+                                                goods_number: goods.goods_number,
+                                                classification: goods.classification,
+                                                original_price: goods.original_price,
+                                                discount_price: goods.discount_price,
+                                                is_delete: goods.is_delete,
+                                                is_sale: goods.is_sale,
+                                                number: item.number,
+                                                goods_attribute: item.goods_attribute,
+                                                created_time: item.created_time,
+                                                last_modify_time: item.last_modify_time,
+                                                goods_info: {
+                                                    img: goods.img_list[0],
+                                                    name: goods.goods_name
+                                                }
+                                            })
+                                        }).catch(err => {
+                                            if (err) {
+                                                reject(err)
+                                            }
+                                        })
+                                })
+                            )
+                        })
+
+                        Promise.all(asyncArr).then(result => {
+                            let goodsData = result.sort((a, b) => {
+                                return b.last_modify_time - a.last_modify_time
+                            })
+                            res.json({
+                                totalGoods: num,
+                                goodsList: goodsData,
+                                msg: 'success!',
+                                status: 200
+                            })
+                        })
+                    })
+            })
+
+
+        } else {
+            res.json({
+                msg: '用户未登录，或登录信息已过期！',
+                status: 201
+            })
+        }
+    })
+})
+
+// 删除用户购物车商品
+router.get('/api/private/deletegoods/fromcar', (req, res) => {
+    Shopcar.findByIdAndDelete(req.query.id).then(() => {
+        res.json({
+            msg: 'success!',
+            status: 200
+        })
+    })
+})
+
+// 修改购物车商品数量
+router.get('/api/private/changenumber', (req, res) => {
+    Shopcar.findByIdAndUpdate(req.query.id, {
+        number: req.query.number
+    }).then(() => {
+        res.json({
+            msg: 'success!',
+            status: 200
+        })
+    })
+})
+
+/**
+ * **************************************************
+ * 订单相关功能接口
+ * **************************************************
+ */
+
+// 创建订单
+router.post('/api/private/setuporder', (req, res) => {
+    let {
+        user_id,
+        goods_list,
+        delivery
+    } = req.body
+    let asyncArray1 = []
+
+    // 查询商品余量、单价、总价
+    goods_list.forEach(item => {
+        asyncArray1.push(
+            new Promise((resolve, reject) => {
+                Goods.findById(item.goods_id).then(data => {
+                    resolve({
+                        goods_id: data._id,
+                        goods_name: data.goods_name,
+                        goods_number: data.goods_number,
+                        price: data.price,
+                        flag: data.goods_number >= item.number,
+                        total_price: data.price * item.number
+                    })
+                })
+            })
+        )
+    })
+
+    Promise.all(asyncArray1).then(result => {
+        let flag = true
+        let totalPrice = 0
+        let mygoods = []
+        result.forEach((item, index1) => {
+            totalPrice += item.total_price
+            if (!item.flag) {
+                flag = false
+            }
+            let myIndex = -1
+            mygoods.forEach((goods, index2) => {
+                if (goods.goods_id.toString() === item.goods_id.toString()) {
+                    myIndex = index2
+                }
+            })
+            if (myIndex === -1) {
+                mygoods.push({
+                    goods_id: item.goods_id,
+                    number: goods_list[index1].number
+                })
+            } else {
+                mygoods[myIndex].number += goods_list[index1].number
+            }
+        })
+
+        if (!flag) {
+            res.json({
+                msg: '商品库存不足',
+                status: 202
+            })
+        } else {
+            let asyncArray2 = []
+            mygoods.forEach(item => {
+                asyncArray2.push(
+                    new Promise((resolve, reject) => {
+                        Goods.findById(item.goods_id).then(goods => {
+                            if (goods.goods_number < item.number) {
+                                resolve(false)
+                            } else {
+                                resolve(true)
+                            }
+                        })
+                    })
+                )
+            })
+
+            Promise.all(asyncArray2).then(result1 => {
+                let flag = true
+                result1.forEach(item => {
+                    if (!item) {
+                        flag = false
+                    }
+                })
+
+                if (!flag) {
+                    res.json({
+                        msg: '商品库存不足',
+                        status: 202
+                    })
+                } else {
+                    User.findById(user_id).then(user => {
+                        if (user.balance < totalPrice) {
+                            res.json({
+                                msg: '您的余额不足！',
+                                status: 201
+                            })
+                        } else {
+                            let asyncArray3 = []
+                            let date = new Date()
+                            goods_list.forEach((goods, index) => {
+                                asyncArray3.push(
+                                    new Promise((resolve, reject) => {
+                                        // 查询商品数量和商品销量
+                                        Goods.findById(goods.goods_id).then(data => {
+                                            let goods_number = data.goods_number - goods.number
+                                            let total_sales = data.total_sales + goods.number
+                                            // 商品数量减少、销量增加
+                                            Goods.findByIdAndUpdate(goods.goods_id, {
+                                                goods_number,
+                                                total_sales
+                                            }).then(() => {
+                                                // 查询用户余额
+                                                User.findById(user_id).then(user => {
+                                                    let balance = user.balance - (goods.number * data.price)
+                                                    // 修改用户余额
+                                                    User.findByIdAndUpdate(user_id, {
+                                                        balance
+                                                    }).then(() => {
+                                                        // 创建订单
+                                                        new Order({
+                                                            user_id,
+                                                            goods_id: goods.goods_id,
+                                                            goods_attribute: goods.goods_attribute,
+                                                            number: goods.number,
+                                                            price: result[index].price,
+                                                            total_price: result[index].total_price,
+                                                            created_time: date,
+                                                            delivery: delivery,
+                                                            // 用户订单的数据需要保留购买时商品的内容
+                                                            goods_info: {
+                                                                goods_name: data.goods_name,
+                                                                img_list: data.img_list,
+                                                                describe: data.describe,
+                                                                price: data.price,
+                                                                discount_price: data.discount_price,
+                                                                original_price: data.original_price
+                                                            }
+                                                        }).save().then(() => {
+                                                            // 删除购物车数据
+                                                            if (goods.car_id) {
+                                                                Shopcar.findByIdAndDelete(goods.car_id).then(() => {
+                                                                    resolve()
+                                                                })
+                                                            } else {
+                                                                resolve()
+                                                            }
+                                                        })
+                                                    })
+                                                })
+                                            })
+                                        })
+                                    })
+                                )
+                            })
+
+                            Promise.all(asyncArray3).then(data => {
+                                res.json({
+                                    msg: 'success!',
+                                    status: 200
+                                })
+                            })
+                        }
+                    })
+                }
+            })
+        }
+    })
+})
+
+// 获取订单列表
+router.get('/api/private/order', (req, res) => {
+    // page_size: 页码
+    // data_number: 数据条数
+    let {
+        user_id,
+        page_size,
+        data_number
+    } = req.query
+    // 判断用户是否存在
+    User.findById(user_id).then(user => {
+        if (user) {
+            Order.count({
+                user_id,
+                is_delete: 0
+            }).then(num => {
+                Order.find({
+                        user_id,
+                        is_delete: 0
+                    })
+                    .skip(parseInt((page_size - 1) * data_number))
+                    .limit(parseInt(data_number))
+                    .sort({
+                        created_time: -1
+                    })
+                    .exec()
+                    .then(order => {
+                        res.json({
+                            totalGoods: num,
+                            msg: 'success!',
+                            status: 200,
+                            orderList: order
+                        })
+                    })
+            })
+        } else {
+            res.json({
+                msg: '用户未登录，或登录信息已过期！',
+                status: 201
+            })
+        }
+    })
+})
+
+// 删除订单
+router.get('/api/private/delete/order/byid', (req, res) => {
+    Order.findByIdAndUpdate(req.query.id, {
+        is_delete: 1
+    }).then(() => {
+        res.json({
+            msg: 'success!',
+            status: 200
+        })
+    })
+})
+
+/**
+ * **************************************************
+ * 用户地址相关功能接口
+ * **************************************************
+ */
+
+// 获取用户默认收货地址
+router.get('/api/private/user/default/address', (req, res) => {
+    let id = req.query.user_id
+    User.findById(id).then(user => {
+        if (user) {
+            let default_delivery_address_id = user.default_delivery_address_id
+            if (!default_delivery_address_id) {
+                return res.json({
+                    addressInfo: null,
+                    msg: '该用户尚未设置默认地址！',
+                    status: 200
+                })
+            }
+            Delivery.findById(default_delivery_address_id).then(data => {
+                res.json({
+                    addressInfo: data,
+                    msg: 'success!',
+                    status: 200
+                })
+            })
+        } else {
+            res.json({
+                msg: '用户ID错误！',
+                status: 201
+            })
+        }
+    })
+})
+
+/**
+ * **************************************************
+ * 商品评论相关功能接口
+ * **************************************************
+ */
+
+// 用户提交评论
+router.post('/api/private/make/comment', (req, res) => {
+    let {
+        user_id,
+        goods_id,
+        goods_attribute,
+        comments: {
+            text,
+            stars,
+            img_list
+        }
+    } = req.body
+    let COMMENTIMGDIR = `uploads/comments/${goods_id}/`
+    // 创建目录
+    fs.mkdir(`./${COMMENTIMGDIR}`, {
+        recursive: true
+    }, err => {
+        if (err) {
+            throw err
+        }
+    })
+    User.findById(user_id).then(user => {
+        if (user.limit === 1) {
+            Comment.find({
+                user_id,
+                goods_id
+            }).then(comment => {
+                if (comment.length >= 2) {
+                    res.json({
+                        msg: '每个用户只能评论同一商品两次！',
+                        status: 201
+                    })
+                } else {
+                    let asyncArray = []
+                    // 遍历文件列表，将临时保存的评论图片复制到永久保存的目录去
+                    img_list.forEach((item, index) => {
+                        let path = item
+                        let newPath = `${COMMENTIMGDIR}${path.split('\\')[1]}`
+                        asyncArray.push(
+                            new Promise((reslove, reject) => {
+                                fs.copyFile(path, `./${newPath}`, err => {
+                                    if (err) {
+                                        reject(err)
+                                    } else {
+                                        img_list[index] = `http://127.0.0.1:3002/${newPath}`
+                                        reslove(img_list[index])
+                                    }
+                                })
+                            })
+                        )
+                    })
+
+                    if (asyncArray.length > 0) {
+                        Promise.all(asyncArray).then(result => {
+                            new Comment({
+                                user_id,
+                                goods_id,
+                                goods_attribute,
+                                text,
+                                stars,
+                                has_img: 1,
+                                img_list: result
+                            }).save().then(() => {
+                                res.json({
+                                    msg: 'success!',
+                                    status: 200
+                                })
+                            })
+                        })
+                    } else {
+                        new Comment({
+                            user_id,
+                            goods_id,
+                            goods_attribute,
+                            text,
+                            stars
+                        }).save().then(() => {
+                            res.json({
+                                msg: 'success!',
+                                status: 200
+                            })
+                        })
+                    }
+                }
+            })
+        } else if (user.limit === -1) {
+            res.json({
+                msg: '您已被禁止评论！',
+                status: 201
+            })
+        } else {
+            res.json({
+                msg: '登录信息过期或该用户不存在！',
+                status: 201
+            })
+        }
+    })
+})
+
+// 获取商品评论
+router.get('/api/private/get/comment', (req, res) => {
+    let id = req.query.id
+    Comment.find({
+        goods_id: id,
+        is_delete: 0
+    }).then(data => {
+        let asyncArray = []
+        data.forEach(item => {
+            asyncArray.push(
+                new Promise((resolve, reject) => {
+                    User.findById(item.user_id).then(user => {
+                        resolve({
+                            comment: item,
+                            user: {
+                                name: user.name,
+                                avatar: user.avatar
+                            }
+                        })
+                    })
+                })
+            )
+        })
+
+        Promise.all(asyncArray).then(result => {
+            res.json({
+                commentList: result,
+                msg: 'success!',
+                status: 200
+            })
+        })
+    })
 })
 
 // 导出路由模块

@@ -1,17 +1,40 @@
 <template>
-  <div class="details-main">
-      商品详情页
-  </div>
+  <div class="details-main ql-editor" v-html="goodsDetails"></div>
 </template>
 
 <script>
 export default {
   data () {
-    return {}
+    return {
+      goodsDetails: ''
+    }
   },
-  created () {},
+
+  created () {
+    this.getGoodsDetails()
+  },
+
   mounted () {},
-  methods: {}
+
+  methods: {
+    // 获取商品详情
+    getGoodsDetails () {
+      this.$axios
+        .get('/goodsdetails', {
+          params: {
+            goods_id: this.$route.query.goodsId
+          }
+        })
+        .then(res => {
+          if (res.data.status === 200) {
+            this.goodsDetails = res.data.goodsData.details
+          } else {
+            this.$message.error(res.data.msg)
+            this.$router.replace({ path: '/404' })
+          }
+        })
+    }
+  }
 }
 </script>
 

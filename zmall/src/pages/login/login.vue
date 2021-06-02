@@ -116,7 +116,7 @@ export default {
             this.$mycookie.set(
               'loginInfo',
               JSON.stringify(data.loginInfo),
-              3 * 60 * 60
+              60 * 60 * 3
             )
             this.$message({
               type: 'success',

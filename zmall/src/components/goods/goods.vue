@@ -1,29 +1,29 @@
 <template>
   <div class="my-goods">
     <el-card shadow="hover" class="my-goods-card">
-      <router-link to="/">
+      <router-link :to="'/goods/details?goodsId=' + goods._id">
         <div class="img xmf-flex" :class="{ shadow: goods.number === 0 }">
-          <el-image fit="cover" :src="goods.img">
+          <el-image :src="goods.img_list[0]">
             <div slot="error" class="image-slot">
               <i class="el-icon-picture-outline" style="font-size: 100px;"></i>
             </div>
           </el-image>
-          <div v-if="goods.number === 0" class="out-of-stock">暂时缺货</div>
+          <div v-if="goods.goods_number === 0" class="out-of-stock">暂时缺货</div>
         </div>
         <div class="content">
-          <div class="title ellipsis">{{ goods.title }}</div>
+          <div class="title ellipsis">{{ goods.goods_name }}</div>
           <div class="describe ellipsis">
             {{ goods.describe }}
           </div>
           <div
-            v-if="goods.discountPrice !== goods.originalPrice"
+            v-if="goods.discount_price !== goods.original_price"
             class="price xmf-flex"
           >
-            <div class="discount-price">{{ goods.discountPrice }}元</div>
-            <div class="original-price">{{ goods.originalPrice }}元</div>
+            <div class="discount-price">{{ goods.discount_price | fmtAmount }}元</div>
+            <div class="original-price">{{ goods.original_price | fmtAmount }}元</div>
           </div>
           <div v-else class="price xmf-flex">
-            <div class="now-price">{{ goods.price }}元</div>
+            <div class="now-price">{{ goods.price | fmtAmount }}元</div>
           </div>
           <div v-if="comment" class="order-message">
             <div class="comment">{{ goods.comment || 0 }} 人评论</div>
