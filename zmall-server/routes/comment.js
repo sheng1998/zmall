@@ -5,7 +5,8 @@ let mongoose = require('mongoose')
 
 // 连接 MongoDB 数据库
 mongoose.connect('mongodb://127.0.0.1:27018/zmall')
-let Order = require('../models/order')
+let Comment = require('../models/comment')
+let Goods = require('../models/goods')
 let User = require('../models/user.js')
 
 // 创建路由容器
@@ -31,18 +32,31 @@ router.all("*", function (req, res, next) {
     next();
 })
 
-// 获取订单列表
-router.get('/order/list', (req, res) => {
+// 获取评论列表
+router.get('/comment/list', (req, res) => {
     // page_size: 页码
     // data_number: 数据条数
     let {
         page_size,
-        data_number
+        data_number,
+        query
     } = req.query
-    Order.count({
+    const reg = new RegExp(query, 'i')
+
+    Comment.count({
+        $or: [{
+            text: {
+                $regex: reg
+            }
+        }],
         is_delete: 0
     }).then(num => {
-        Order.find({
+        Comment.find({
+                $or: [{
+                    text: {
+                        $regex: reg
+                    }
+                }],
                 is_delete: 0
             })
             .skip(parseInt((page_size - 1) * data_number))
@@ -57,18 +71,13 @@ router.get('/order/list', (req, res) => {
                     asyncArray.push(
                         new Promise((resolve, reject) => {
                             User.findById(item.user_id).then(user => {
-                                resolve({
-                                    _id: item._id,
-                                    username: user.username,
-                                    created_time: item.created_time,
-                                    delivery: item.delivery,
-                                    goods_attribute: item.goods_attribute,
-                                    goods_id: item.goods_id,
-                                    goods_info: item.goods_info,
-                                    number: item.number,
-                                    price: item.price,
-                                    total_price: item.total_price,
-                                    user_id: item.user_id
+                                Goods.findById(item.goods_id).then(goods => {
+                                    resolve({
+                                        _id: item._id,
+                                        user,
+                                        goods,
+                                        comment: item
+                                    })
                                 })
                             })
                         })
@@ -77,8 +86,8 @@ router.get('/order/list', (req, res) => {
 
                 Promise.all(asyncArray).then(result => {
                     res.json({
-                        totalOrder: num,
-                        orderList: result,
+                        totalComment: num,
+                        data: result,
                         msg: 'success!',
                         status: 200
                     })
@@ -87,9 +96,9 @@ router.get('/order/list', (req, res) => {
     })
 })
 
-// 删除订单信息
-router.get('/delete/order', (req, res) => {
-    Order.findByIdAndUpdate(req.query.id, {
+// 删除评论信息
+router.get('/delete/comment', (req, res) => {
+    Comment.findByIdAndUpdate(req.query.id, {
         is_delete: 1
     }).then(() => {
         res.json({

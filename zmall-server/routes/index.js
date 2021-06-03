@@ -1272,14 +1272,18 @@ router.post('/api/private/setuporder', (req, res) => {
         asyncArray1.push(
             new Promise((resolve, reject) => {
                 Goods.findById(item.goods_id).then(data => {
-                    resolve({
-                        goods_id: data._id,
-                        goods_name: data.goods_name,
-                        goods_number: data.goods_number,
-                        price: data.price,
-                        flag: data.goods_number >= item.number,
-                        total_price: data.price * item.number
-                    })
+                    if (data.is_delete === 1 || data.is_sale === 0) {
+                        reject('商品已经失效！')
+                    } else {
+                        resolve({
+                            goods_id: data._id,
+                            goods_name: data.goods_name,
+                            goods_number: data.goods_number,
+                            price: data.price,
+                            flag: data.goods_number >= item.number,
+                            total_price: data.price * item.number
+                        })
+                    }
                 })
             })
         )
@@ -1421,6 +1425,13 @@ router.post('/api/private/setuporder', (req, res) => {
                 }
             })
         }
+    }).catch(err => {
+        if (err) {
+            res.json({
+                msg: '购买失败，商品已经失效！',
+                status: 202
+            })
+        }
     })
 })
 
@@ -1548,62 +1559,55 @@ router.post('/api/private/make/comment', (req, res) => {
                 user_id,
                 goods_id
             }).then(comment => {
-                if (comment.length >= 2) {
-                    res.json({
-                        msg: '每个用户只能评论同一商品两次！',
-                        status: 201
-                    })
-                } else {
-                    let asyncArray = []
-                    // 遍历文件列表，将临时保存的评论图片复制到永久保存的目录去
-                    img_list.forEach((item, index) => {
-                        let path = item
-                        let newPath = `${COMMENTIMGDIR}${path.split('\\')[1]}`
-                        asyncArray.push(
-                            new Promise((reslove, reject) => {
-                                fs.copyFile(path, `./${newPath}`, err => {
-                                    if (err) {
-                                        reject(err)
-                                    } else {
-                                        img_list[index] = `http://127.0.0.1:3002/${newPath}`
-                                        reslove(img_list[index])
-                                    }
-                                })
-                            })
-                        )
-                    })
-
-                    if (asyncArray.length > 0) {
-                        Promise.all(asyncArray).then(result => {
-                            new Comment({
-                                user_id,
-                                goods_id,
-                                goods_attribute,
-                                text,
-                                stars,
-                                has_img: 1,
-                                img_list: result
-                            }).save().then(() => {
-                                res.json({
-                                    msg: 'success!',
-                                    status: 200
-                                })
+                let asyncArray = []
+                // 遍历文件列表，将临时保存的评论图片复制到永久保存的目录去
+                img_list.forEach((item, index) => {
+                    let path = item
+                    let newPath = `${COMMENTIMGDIR}${path.split('\\')[1]}`
+                    asyncArray.push(
+                        new Promise((reslove, reject) => {
+                            fs.copyFile(path, `./${newPath}`, err => {
+                                if (err) {
+                                    reject(err)
+                                } else {
+                                    img_list[index] = `http://127.0.0.1:3002/${newPath}`
+                                    reslove(img_list[index])
+                                }
                             })
                         })
-                    } else {
+                    )
+                })
+
+                if (asyncArray.length > 0) {
+                    Promise.all(asyncArray).then(result => {
                         new Comment({
                             user_id,
                             goods_id,
                             goods_attribute,
                             text,
-                            stars
+                            stars,
+                            has_img: 1,
+                            img_list: result
                         }).save().then(() => {
                             res.json({
                                 msg: 'success!',
                                 status: 200
                             })
                         })
-                    }
+                    })
+                } else {
+                    new Comment({
+                        user_id,
+                        goods_id,
+                        goods_attribute,
+                        text,
+                        stars
+                    }).save().then(() => {
+                        res.json({
+                            msg: 'success!',
+                            status: 200
+                        })
+                    })
                 }
             })
         } else if (user.limit === -1) {
@@ -1620,38 +1624,196 @@ router.post('/api/private/make/comment', (req, res) => {
     })
 })
 
-// 获取商品评论
-router.get('/api/private/get/comment', (req, res) => {
-    let id = req.query.id
-    Comment.find({
-        goods_id: id,
-        is_delete: 0
-    }).then(data => {
-        let asyncArray = []
-        data.forEach(item => {
-            asyncArray.push(
-                new Promise((resolve, reject) => {
-                    User.findById(item.user_id).then(user => {
-                        resolve({
-                            comment: item,
-                            user: {
-                                name: user.name,
-                                avatar: user.avatar
-                            }
-                        })
-                    })
-                })
-            )
+// 获取评论导航
+router.get('/api/private/commentnav', (req, res) => {
+    let goods_id = req.query.id
+    let commentNav = []
+    Comment.count({
+            goods_id,
+            is_delete: 0
         })
-
-        Promise.all(asyncArray).then(result => {
+        .then(num1 => {
+            commentNav.push({
+                name: '全部',
+                value: 'totalComment',
+                number: num1
+            })
+            return Comment.count({
+                goods_id,
+                is_delete: 0,
+                stars: 5
+            })
+        })
+        .then(num2 => {
+            commentNav.push({
+                name: '五星好评',
+                value: 'goodCommentNum',
+                number: num2
+            })
+            return Comment.count({
+                goods_id,
+                is_delete: 0,
+                has_img: 1
+            })
+        })
+        .then(num3 => {
+            commentNav.push({
+                name: '有图',
+                value: 'hasImgCommentNum',
+                number: num3
+            })
+            return Comment.count({
+                goods_id,
+                is_delete: 0,
+                stars: {
+                    "$lte": 2
+                }
+            })
+        })
+        .then(num4 => {
+            commentNav.push({
+                name: '差评',
+                value: 'negativeCommentNum',
+                number: num4
+            })
             res.json({
-                commentList: result,
+                commentNav,
                 msg: 'success!',
                 status: 200
             })
         })
-    })
+})
+
+// 获取商品评论
+router.get('/api/private/get/comment', (req, res) => {
+    let id = req.query.id
+    let sort = req.query.sort
+    if (sort === '五星好评') {
+        Comment.find({
+            goods_id: id,
+            is_delete: 0,
+            stars: 5
+        }).then(data => {
+            let asyncArray = []
+            data.forEach(item => {
+                asyncArray.push(
+                    new Promise((resolve, reject) => {
+                        User.findById(item.user_id).then(user => {
+                            resolve({
+                                comment: item,
+                                user: {
+                                    name: user.name,
+                                    avatar: user.avatar
+                                }
+                            })
+                        })
+                    })
+                )
+            })
+
+            Promise.all(asyncArray).then(result => {
+                res.json({
+                    commentList: result,
+                    msg: 'success!',
+                    status: 200
+                })
+            })
+        })
+    } else if (sort === '有图') {
+        Comment.find({
+            goods_id: id,
+            is_delete: 0,
+            has_img: 1
+        }).then(data => {
+            let asyncArray = []
+            data.forEach(item => {
+                asyncArray.push(
+                    new Promise((resolve, reject) => {
+                        User.findById(item.user_id).then(user => {
+                            resolve({
+                                comment: item,
+                                user: {
+                                    name: user.name,
+                                    avatar: user.avatar
+                                }
+                            })
+                        })
+                    })
+                )
+            })
+
+            Promise.all(asyncArray).then(result => {
+                res.json({
+                    commentList: result,
+                    msg: 'success!',
+                    status: 200
+                })
+            })
+        })
+    } else if (sort === '差评') {
+        Comment.find({
+            goods_id: id,
+            is_delete: 0,
+            stars: {
+                "$lte": 2
+            }
+        }).then(data => {
+            let asyncArray = []
+            data.forEach(item => {
+                asyncArray.push(
+                    new Promise((resolve, reject) => {
+                        User.findById(item.user_id).then(user => {
+                            resolve({
+                                comment: item,
+                                user: {
+                                    name: user.name,
+                                    avatar: user.avatar
+                                }
+                            })
+                        })
+                    })
+                )
+            })
+
+            Promise.all(asyncArray).then(result => {
+                res.json({
+                    commentList: result,
+                    msg: 'success!',
+                    status: 200
+                })
+            })
+        })
+    } else {
+        Comment.find({
+            goods_id: id,
+            is_delete: 0
+        }).then(data => {
+            let asyncArray = []
+            data.forEach(item => {
+                asyncArray.push(
+                    new Promise((resolve, reject) => {
+                        User.findById(item.user_id).then(user => {
+                            resolve({
+                                comment: item,
+                                user: {
+                                    name: user.name,
+                                    avatar: user.avatar
+                                }
+                            })
+                        })
+                    })
+                )
+            })
+
+            Promise.all(asyncArray).then(result => {
+                res.json({
+                    commentList: result,
+                    msg: 'success!',
+                    status: 200
+                })
+            })
+        })
+    }
 })
 
 // 导出路由模块

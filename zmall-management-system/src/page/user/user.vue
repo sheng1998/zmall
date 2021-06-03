@@ -2,6 +2,28 @@
   <div class="manage-user">
     <div class="xmf-system-flex fzzj">用户管理</div>
     <el-card class="userlist-card">
+      <!-- 搜索用户 -->
+      <el-row class="user-search-input">
+        <el-input
+          class="search-input"
+          ref="search"
+          clearable
+          placeholder="搜索用户"
+          prefix-icon="el-icon-search"
+          v-model="pagingForm.query"
+          @keyup.enter.native="getUserList"
+          @blur="getUserList"
+          @input="searchUser"
+        >
+          <el-button
+            slot="append"
+            icon="el-icon-search"
+            @click="getUserList"
+          ></el-button>
+        </el-input>
+      </el-row>
+
+      <!-- 用户列表 -->
       <el-table
         :data="userData"
         stripe
@@ -246,6 +268,17 @@ export default {
         })
     },
 
+    // 搜索用户
+    searchUser () {
+      this.$debounce.use(
+        () => {
+          this.getUserList()
+        },
+        500,
+        true
+      )
+    },
+
     // 每页显示条数改变
     handleSizeChange (val) {
       this.pagingForm.dataNumber = val
@@ -292,6 +325,12 @@ export default {
 
 <style lang="less">
 .manage-user {
+  .search-input {
+    float: right;
+    width: 400px;
+    margin-bottom: 20px;
+  }
+
   .userlist-table {
     .user-avatar {
       height: 50px;

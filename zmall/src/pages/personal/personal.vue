@@ -35,11 +35,25 @@
               <el-button size="small" type="primary">更换头像</el-button>
             </el-upload>
           </el-form-item>
+
           <!-- 用户名 -->
           <el-form-item label="用户名" prop="username" class="username">
             <el-input v-model="userinfo.username" disabled></el-input>
             <div class="tip">
               *提示：用户名禁止修改，用户名为用户登录的唯一凭证。
+            </div>
+          </el-form-item>
+
+          <!-- 余额 -->
+          <el-form-item label="您的余额">
+            <div
+              class="balance"
+              :class="{
+                green: userinfo.balance >= 1000,
+                red: userinfo.balance < 1000
+              }"
+            >
+              {{ userinfo.balance | fmtAmount }} 元
             </div>
           </el-form-item>
 
@@ -443,7 +457,7 @@ export default {
       this.getUserInfo()
     } else {
       this.$message.warning('登录信息过期，或用户不存在！')
-      this.$router.replace({path: '/404'})
+      this.$router.replace({ path: '/404' })
     }
   },
 
@@ -467,7 +481,7 @@ export default {
           } else {
             this.$message.error(res.data.msg)
             this.userId = ''
-            this.$router.replace({path: '/404'})
+            this.$router.replace({ path: '/404' })
           }
         })
     },
@@ -838,6 +852,19 @@ export default {
             width: 100px;
             height: 100px;
             border-radius: 5px;
+          }
+        }
+
+        .balance {
+          font-size: 20px;
+          font-weight: 700;
+
+          &.green {
+            color: #3aab6b;
+          }
+
+          &.red {
+            color: #f56c6c;
           }
         }
       }

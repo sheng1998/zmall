@@ -566,7 +566,7 @@ export default {
 
               img {
                 width: 80px;
-                height: 80px;
+                height: 60px;
               }
             }
 
@@ -582,10 +582,12 @@ export default {
                 text-overflow: ellipsis;
                 -webkit-line-clamp: 2;
                 -webkit-box-orient: vertical;
+                color: #000;
+                font-size: 14px;
               }
 
               .goods-attribute {
-                font-size: 14px;
+                font-size: 12px;
                 color: #9e9e9e;
                 height: 20px;
                 display: flex;

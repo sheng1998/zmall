@@ -9,16 +9,29 @@
         class="order-table"
       >
         <!-- 订单号 -->
-        <el-table-column label="订单号" width="180" align="center">
+        <el-table-column
+          prop="_id"
+          label="订单号"
+          width="220"
+          align="center"
+          :show-overflow-tooltip="true"
+        >
           <template slot-scope="scope">
             <div class="order-id">
-              {{ scope.row.order_id }}
+              {{ scope.row._id }}
             </div>
           </template>
         </el-table-column>
 
         <!-- 订单时间 -->
-        <el-table-column label="下订时间" width="160" align="center">
+        <el-table-column
+          prop="created_time"
+          label="下订时间"
+          width="160"
+          align="center"
+          sortable
+          :show-overflow-tooltip="true"
+        >
           <template slot-scope="scope">
             <div class="created-time">
               {{ scope.row.created_time | fmtdate2 }}
@@ -28,6 +41,7 @@
 
         <!-- 客户昵称 -->
         <el-table-column
+          prop="username"
           label="客户昵称"
           width="200"
           align="center"
@@ -50,23 +64,22 @@
         >
           <template slot-scope="scope">
             <div class="goods-name ellipsis">
-              {{ scope.row.goods_name }}
+              {{ scope.row.goods_info.goods_name }}
             </div>
           </template>
         </el-table-column>
 
         <!-- 商品图片 -->
         <el-table-column
-          prop="name"
           label="商品图片"
           width="120"
           align="center"
         >
           <template slot-scope="scope">
-            <div class="goods-img ellipsis">
+            <div class="goods-img">
               <el-image
-                :src="scope.row.goods_img"
-                :preview-src-list="scope.row.goods_imglist"
+                :src="scope.row.goods_info.img_list[0]"
+                :preview-src-list="scope.row.goods_info.img_list"
               >
                 <div slot="error" class="image-slot">
                   <i class="el-icon-picture-outline"></i>
@@ -78,7 +91,7 @@
 
         <!-- 商品属性 -->
         <el-table-column
-          prop="name"
+          prop="goods_attribute"
           label="商品属性"
           width="220"
           align="center"
@@ -93,30 +106,33 @@
 
         <!-- 商品单价 -->
         <el-table-column
-          prop="name"
+          prop="goods_info.price"
           label="商品单价（元）"
           width="120"
           align="center"
+          :show-overflow-tooltip="true"
         >
           <template slot-scope="scope">
             <div class="goods-price ellipsis">
-              {{ scope.row.goods_price | fmtAmount }}
+              {{ scope.row.goods_info.price | fmtAmount }}
             </div>
           </template>
         </el-table-column>
 
         <!-- 购买数量 -->
         <el-table-column
-          prop="goods_number"
-          label="购买数量"
-          width="80"
+          prop="number"
+          label="购买数量（件）"
+          width="120"
           align="center"
+          :show-overflow-tooltip="true"
         >
         </el-table-column>
 
         <!-- 实际付款 -->
         <el-table-column
-          label="实际付款"
+          prop="total_price"
+          label="实际付款（元）"
           width="120"
           align="center"
           :show-overflow-tooltip="true"
@@ -130,6 +146,7 @@
 
         <!-- 收货人 -->
         <el-table-column
+          prop="delivery.name"
           label="收货人"
           width="200"
           align="center"
@@ -137,36 +154,38 @@
         >
           <template slot-scope="scope">
             <div class="consignee-name ellipsis">
-              {{ scope.row.consignee_name }}
+              {{ scope.row.delivery.name }}
             </div>
           </template>
         </el-table-column>
 
         <!-- 联系电话 -->
-        <el-table-column label="联系电话" width="120" align="center">
+        <el-table-column label="联系电话" width="150" align="center">
           <template slot-scope="scope">
             <div class="contact-number ellipsis">
-              {{ scope.row.contact_number }}
+              {{ scope.row.delivery.phone }}
             </div>
           </template>
         </el-table-column>
 
         <!-- 收货地址 -->
         <el-table-column
+          prop="delivery.address"
           label="收货地址"
           min-width="300"
+          center
           :show-overflow-tooltip="true"
         >
           <template slot-scope="scope">
             <div class="receiving-address ellipsis">
-              {{ scope.row.receiving_address }}
+              {{ scope.row.delivery.address }}
             </div>
           </template>
         </el-table-column>
 
         <!-- 操作 -->
         <el-table-column fixed="right" label="操作" width="100" align="center">
-          <template>
+          <template slot-scope="scope">
             <el-row>
               <el-button
                 size="mini"
@@ -174,6 +193,7 @@
                 type="danger"
                 icon="el-icon-delete"
                 circle
+                @click="deleteOrder(scope.row._id)"
               ></el-button>
             </el-row>
           </template>
@@ -181,7 +201,7 @@
       </el-table>
 
       <!-- 分页 -->
-      <div class="fenye" v-if="pagingForm.totalDate > 10">
+      <div class="fenye" v-if="pagingForm.totalDate > 5">
         <el-pagination
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
@@ -202,33 +222,7 @@ export default {
   data () {
     return {
       // 订单列表
-      orderList: [
-        {
-          order_id: '05191323564312060134',
-          created_time: '2016-05-03',
-          username: '王小虎王小虎王小虎王小虎',
-          goods_name: '上海市普陀区金沙江路 1518 弄上海市普陀区金沙江路',
-          goods_img:
-            'http://127.0.0.1:3002/uploads/goods/test/869db930b54011ebbb3677c245962c19.jpg',
-          goods_imglist: [
-            'http://127.0.0.1:3002/uploads/goods/test/869db930b54011ebbb3677c245962c19.jpg'
-          ],
-          goods_attribute: '我是属性我是属性我是属性我是属性',
-          goods_price: 12999.0,
-          goods_number: 2,
-          total_price: 12999 * 20,
-          consignee_name: '王小虎王小虎王小虎王小虎',
-          receiving_address:
-            '广东省湛江市麻章区海大路1号广东海洋大学西区海思B220 庄值升收货你啊活呢啦啦啦啦啦啦啦啦绿',
-          contact_number: '18475140601'
-        },
-        {
-          order_id: '21051913235643060134',
-          date: '2016-05-02',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }
-      ],
+      orderList: [],
       // 分页相关数据
       pagingForm: {
         currentPage: 1, // 当前页码
@@ -240,27 +234,62 @@ export default {
   },
 
   created () {
-    // this.$axios.get('/order/list')
+    this.getOrderList()
   },
 
   mounted () {},
 
   methods: {
     // 获取订单数据
-    getOrder () {
-      console.log('111')
+    getOrderList () {
+      this.$axios
+        .get('/order/list', {
+          params: {
+            page_size: this.pagingForm.currentPage,
+            data_number: this.pagingForm.dataNumber
+          }
+        })
+        .then(res => {
+          if (res.data.status === 200) {
+            this.pagingForm.totalDate = res.data.totalOrder
+            this.orderList = res.data.orderList
+          }
+        })
+    },
+
+    // 删除订单
+    deleteOrder (id) {
+      this.$confirm('是否删除该订单?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          this.$axios.get('/delete/order', { params: { id } }).then(res => {
+            if (res.data.status === 200) {
+              this.$message.success('删除订单成功！')
+              this.getOrderList()
+            }
+          })
+        })
+        .catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          })
+        })
     },
 
     // 每页显示条数改变
     handleSizeChange (val) {
       this.pagingForm.dataNumber = val
-      this.getOrder()
+      this.getOrderList()
     },
 
     // 当前页改变
     handleCurrentChange (val) {
       this.pagingForm.currentPage = val
-      this.getOrder()
+      this.getOrderList()
     }
   }
 }
@@ -284,6 +313,31 @@ export default {
     .goods-attribute {
       color: #b0b0b0;
     }
+
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      /*滚动条里面小方块*/
+      border-radius: 10px;
+      background-color: skyblue;
+      background-image: -webkit-linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.2) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0.2) 75%,
+        transparent 75%,
+        transparent
+      );
+    }
+  }
+
+  .fenye {
+    margin-top: 20px;
   }
 }
 </style>

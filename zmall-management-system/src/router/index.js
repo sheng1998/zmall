@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Home from '@/page/home'
+import Error from '@/page/404/error'
 import Logo from '@/page/home/manageLogo'
 import Carousel from '@/page/home/manageCarousel'
 import Nav from '@/page/home/manageNav'
@@ -12,7 +13,7 @@ import Comment from '@/page/goods/comment'
 import Order from '@/page/order/order'
 import StockWarning from '@/page/stockWarning/stockWarning'
 import User from '@/page/user/user'
-import Statistics from '@/page/statistics/statistics'
+// import Statistics from '@/page/statistics/statistics'
 import Parameter from '@/page/goods/parameter'
 
 Vue.use(Router)
@@ -22,6 +23,11 @@ const router = new Router({
     {
       path: '/',
       redirect: '/home/manage/logo'
+    },
+    {
+      path: '/404',
+      name: 'error',
+      component: Error
     },
     {
       path: '/home',
@@ -98,11 +104,11 @@ const router = new Router({
           component: User
         },
         // 数据统计页面路由
-        {
-          path: '/manage/statistics',
-          name: 'statistics',
-          component: Statistics
-        },
+        // {
+        //   path: '/manage/statistics',
+        //   name: 'statistics',
+        //   component: Statistics
+        // },
         // 商品参数添加页面
         {
           path: '/goods/all/parameter',
@@ -110,8 +116,16 @@ const router = new Router({
           component: Parameter
         }
       ]
+    },
+    {
+      path: '*',
+      redirect: '/404'
     }
   ]
+})
+
+router.afterEach((to, from, next) => {
+  window.scrollTo(0, 0)
 })
 
 export default router

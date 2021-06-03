@@ -107,12 +107,28 @@
         <!-- 按钮区域 -->
         <div class="xmf-flex buy-goods-btn">
           <div class="add-to-shopcar">
-            <el-button type="danger" @click="addToShopCar"
+            <el-button
+              type="danger"
+              @click="addToShopCar"
+              :disabled="
+                goods.is_delete === 1 ||
+                  goods.is_sale === 0 ||
+                  goods.goods_number <= 0
+              "
               >加入购物车</el-button
             >
           </div>
           <div class="now-buy">
-            <el-button type="danger" @click="buyNow">立即购买</el-button>
+            <el-button
+              type="danger"
+              @click="buyNow"
+              :disabled="
+                goods.is_delete === 1 ||
+                  goods.is_sale === 0 ||
+                  goods.goods_number <= 0
+              "
+              >立即购买</el-button
+            >
           </div>
         </div>
       </div>
@@ -354,6 +370,18 @@ export default {
                 path: '#'
               }
             ]
+
+            if (goods.is_delete === 1 || goods.is_sale === 0) {
+              this.$confirm('该商品已经失效, 是否继续留在该页面?', '提示', {
+                confirmButtonText: '取消并返回上一页',
+                cancelButtonText: '继续留在该页面',
+                type: 'warning'
+              })
+                .then(() => {
+                  this.$router.go(-1)
+                })
+                .catch(() => {})
+            }
           } else {
             this.$message.error(res.data.msg)
             this.$router.replace({ path: '/404' })

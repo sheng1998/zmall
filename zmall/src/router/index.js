@@ -97,7 +97,13 @@ let router = new Router({
 })
 
 router.afterEach((to, from, next) => {
-  window.scrollTo(0, 0)
+  if (
+    from.name !== 'detailsMain' &&
+    from.name !== 'detailsParameter' &&
+    from.name !== 'detailsComment'
+  ) {
+    window.scrollTo(0, 0)
+  }
 })
 
 export default router

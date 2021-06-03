@@ -31,18 +31,67 @@
           :data="tableData"
           tooltip-effect="dark"
           style="width: 100%;"
+          class="shop-car-table"
           @selection-change="handleSelectionChange"
         >
           <el-table-column type="selection" width="80"> </el-table-column>
           <!-- 商品信息 -->
           <el-table-column label="商品信息" min-width="500">
             <template slot-scope="scope">
+              <!-- 失效商品 -->
+              <div
+                class="xmf-flex-only goods-info"
+                v-if="scope.row.is_delete === 1 || scope.row.is_sale === 0"
+              >
+                <div class="goods_info_img">
+                  <!-- 商品图片 -->
+                  <el-image :src="scope.row.goods_info.img" alt="">
+                    <div slot="error" class="image-slot">
+                      <i
+                        class="el-icon-picture-outline"
+                        style="font-size: 100px;"
+                      ></i>
+                    </div>
+                  </el-image>
+                  <!-- 商品已下架或已删除 -->
+                  <div
+                    v-if="scope.row.is_delete === 1 || scope.row.is_sale === 0"
+                    class="goods-invalid"
+                  >
+                    <span>商品已失效</span>
+                  </div>
+                </div>
+                <div class="name-and-describe">
+                  <div class="name">
+                    {{ scope.row.goods_info.name }}
+                  </div>
+                  <div class="attribute ellipsis">
+                    {{ scope.row.goods_attribute }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- 未失效商品 -->
               <router-link
+                v-else
                 :to="'/goods/details/main?goodsId=' + scope.row.goods_id"
                 class="xmf-flex-only goods-info"
               >
                 <div class="goods_info_img">
-                  <el-image :src="scope.row.goods_info.img" alt=""></el-image>
+                  <!-- 商品图片 -->
+                  <el-image :src="scope.row.goods_info.img" alt="">
+                    <div slot="error" class="image-slot">
+                      <i
+                        class="el-icon-picture-outline"
+                        style="font-size: 100px;"
+                      ></i>
+                    </div>
+                  </el-image>
+
+                  <!-- 商品库存不足 -->
+                  <div v-if="scope.row.goods_number <= 0" class="out-of-stock">
+                    <span>库存不足</span>
+                  </div>
                 </div>
                 <div class="name-and-describe">
                   <div class="name">
@@ -327,11 +376,52 @@ export default {
           if (res.data.status === 200) {
             this.tableData = res.data.goodsList
             this.pagingForm.totalDate = res.data.totalGoods
+            this.$nextTick(() => {
+              this.setDisabled()
+            })
           } else {
             this.$message.error(res.data.msg)
             this.$router.replace({ path: '/404' })
           }
         })
+    },
+
+    // 遍历表格，设置禁止选中
+    setDisabled () {
+      this.tableData.forEach((item, index) => {
+        if (
+          item.is_delete === 1 ||
+          item.is_sale === 0 ||
+          item.goods_number <= 0
+        ) {
+          let node1 = document.querySelector(
+            `.shop-car-table tbody tr:nth-child(${index +
+              1}) .el-checkbox__original`
+          )
+          node1.setAttribute('disabled', 'disabled')
+
+          let node2 = document.querySelector(
+            `.shop-car-table tbody tr:nth-child(${index +
+              1}) .el-checkbox__inner`
+          )
+          node2.style.backgroundColor = '#edf2fc'
+          node2.style.borderColor = '#dcdfe6'
+          node2.style.cursor = 'not-allowed'
+
+          let node3 = document.querySelector(
+            `.shop-car-table tbody tr:nth-child(${index +
+              1}) .el-input-number span:nth-child(1)`
+          )
+
+          let node4 = document.querySelector(
+            `.shop-car-table tbody tr:nth-child(${index +
+              1}) .el-input-number span:nth-child(2)`
+          )
+
+          node3.classList.add('is-disabled')
+          node4.classList.add('is-disabled')
+        }
+      })
     },
 
     // 改变商品数量
@@ -492,10 +582,28 @@ export default {
     }
 
     .goods-info {
+      cursor: pointer;
+
       .goods_info_img {
+        position: relative;
+
         img {
           width: 80px;
-          height: 80px;
+          height: 60px;
+        }
+
+        .goods-invalid,
+        .out-of-stock {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 80px;
+          height: 60px;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          color: #fff;
+          justify-content: center;
+          align-items: flex-end;
         }
       }
 
@@ -504,7 +612,7 @@ export default {
         justify-content: space-between;
         flex-direction: column;
         margin-left: 10px;
-        height: 80px;
+        height: 60px;
 
         .name {
           display: -webkit-box;

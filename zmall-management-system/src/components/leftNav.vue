@@ -97,10 +97,10 @@
       </el-menu-item>
 
       <!-- 数据统计 -->
-      <el-menu-item index="/manage/statistics">
+      <!-- <el-menu-item index="/manage/statistics">
         <i class="el-icon-setting"></i>
         <span slot="title">数据统计</span>
-      </el-menu-item>
+      </el-menu-item> -->
     </el-menu>
   </div>
 </template>

@@ -1,23 +1,25 @@
 <template>
   <div class="details-comment">
     <!-- 评论导航菜单 -->
-    <div class="comment-nav">
-      <el-checkbox-group v-model="commentNavList" :min="1" :max="2">
+    <div class="comment-nav" v-if="commentNav[0] && commentNav[0].number > 0">
+      <el-checkbox-group v-model="checkCommentNav">
         <el-checkbox
-          v-for="(item, index) in allCommentNav"
-          :label="item.value"
+          v-for="item in commentNav"
+          :label="item.name"
           :key="item.value"
-          @change="fun2(item.value)"
-          :checked="index === 0"
+          @change="checkboxChange(item.name)"
         >
-          <span>{{ item.value }}</span>
-          <span>{{ item.number > 999 ? '999+' : item.number }}</span>
+          <span>{{ item.name }}</span>
+          <span>（{{ item.number > 999 ? '999+' : item.number }}）</span>
         </el-checkbox>
       </el-checkbox-group>
     </div>
 
     <!-- 评论 -->
-    <div class="comment-content">
+    <div
+      class="comment-content"
+      v-if="commentList.length > 0"
+    >
       <div
         class="comment-item xmf-flex-only"
         v-for="item in commentList"
@@ -43,7 +45,9 @@
               </el-rate>
             </div>
             <div class="xmf-flex-only">
-              <div class="created_time">{{ item.comment.created_time | fmtdate2 }}</div>
+              <div class="created_time">
+                {{ item.comment.created_time | fmtdate2 }}
+              </div>
             </div>
           </div>
 
@@ -67,6 +71,8 @@
         </div>
       </div>
     </div>
+
+    <div class="no-comment" v-else>暂无评论</div>
   </div>
 </template>
 
@@ -75,24 +81,10 @@ export default {
   data () {
     return {
       goodsId: '',
-      evaluateList: [],
-      commentNavList: [],
 
       // 评论导航栏
-      allCommentNav: [
-        {
-          value: '全部',
-          number: 3456
-        },
-        {
-          value: '最热门',
-          number: 123
-        },
-        {
-          value: '有图',
-          number: 123
-        }
-      ],
+      commentNav: [],
+      checkCommentNav: ['全部'],
 
       // 评论列表
       commentList: []
@@ -101,7 +93,9 @@ export default {
 
   created () {
     this.goodsId = this.$route.query.goodsId
-    this.getComment()
+    this.getCommentNav(() => {
+      this.getComment()
+    })
   },
 
   mounted () {},
@@ -112,25 +106,38 @@ export default {
       this.$axios
         .get('/get/comment', {
           params: {
-            id: this.goodsId
+            id: this.goodsId,
+            sort: this.checkCommentNav[0]
           }
         })
         .then(res => {
           if (res.data.status === 200) {
-            console.log(res.data)
             this.commentList = res.data.commentList
           }
         })
     },
 
-    fun (name) {
-      this.evaluateList = []
-      this.evaluateList.push(name)
+    // 获取评论导航栏
+    getCommentNav (callback) {
+      this.$axios
+        .get('/commentnav', {
+          params: {
+            id: this.goodsId
+          }
+        })
+        .then(res => {
+          this.commentNav = res.data.commentNav
+          if (res.data.commentNav[0].number > 0) {
+            callback()
+          }
+        })
     },
 
-    fun2 (name) {
-      this.commentNavList = []
-      this.commentNavList.push(name)
+    // 点击评论导航
+    checkboxChange (name) {
+      this.checkCommentNav = []
+      this.checkCommentNav.push(name)
+      this.getComment()
     }
   }
 }
@@ -138,8 +145,7 @@ export default {
 
 <style lang="less">
 .details-comment {
-  margin: 0 50px;
-  margin-top: 30px;
+  margin: 30px 50px 50px 50px;
 
   .comment-nav {
     width: 80%;
@@ -255,6 +261,16 @@ export default {
         }
       }
     }
+  }
+
+  .no-comment {
+    margin-top: 80px;
+    margin-bottom: 100px;
+    display: flex;
+    justify-content: center;
+    font-size: 50px;
+    font-weight: 700;
+    color: #cccccc;
   }
 }
 </style>
