@@ -22,6 +22,7 @@ let Delivery = require('../models/deliveryAddress')
 let Shopcar = require('../models/shopcar')
 let Order = require('../models/order')
 let Comment = require('../models/comment')
+let LikeGoods = require('../models/likegoods')
 
 // 创建路由容器
 let router = express.Router()
@@ -904,7 +905,7 @@ router.get('/api/private/hotsalesgoods', (req, res) => {
         .sort({
             total_sales: -1
         })
-        .limit(30)
+        .limit(20)
         .then(goods => {
             res.json({
                 goodsList: goods,
@@ -969,9 +970,88 @@ router.get('/api/private/recommendgoods', (req, res) => {
         })
 })
 
+// 获取猜你喜欢商品列表
+router.get('/api/private/guessyoulike', (req, res) => {
+    let {
+        user_id
+    } = req.query
+    if (!user_id) {
+        res.json({
+            goodsList: [],
+            msg: 'success!',
+            status: 200
+        })
+    } else {
+        LikeGoods.find({
+                user_id
+            })
+            .sort({
+                created_time: -1
+            })
+            .exec()
+            .then(data => {
+                data = data.slice(0, 5)
+                let asyncArray = []
+                data.forEach((item, index) => {
+                    let reg = new RegExp(item.query, 'i')
+                    asyncArray.push(
+                        new Promise((resolve, reject) => {
+                            Goods.find({
+                                    is_delete: 0,
+                                    is_sale: 1,
+                                    $or: [{
+                                        goods_name: {
+                                            $regex: reg
+                                        }
+                                    }, {
+                                        describe: {
+                                            $regex: reg
+                                        }
+                                    }, {
+                                        classification: {
+                                            $regex: reg
+                                        }
+                                    }]
+                                })
+                                .sort({
+                                    total_sales: -1
+                                })
+                                .limit(parseInt(15 - 2 * index))
+                                .exec()
+                                .then(goods => {
+                                    resolve(goods)
+                                })
+                        })
+                    )
+                })
+
+                Promise.all(asyncArray).then(result => {
+                    let goodsList = []
+                    result.forEach(item => {
+                        goodsList.push(...item)
+                    })
+                    for (let i = 0; i < goodsList.length - 1; i++) {
+                        for (let j = i + 1; j < goodsList.length; j++) {
+                            if (goodsList[i]._id.toString() === goodsList[j]._id.toString()) {
+                                goodsList.splice(j, 1)
+                                j--
+                            }
+                        }
+                    }
+                    res.json({
+                        goodsList: goodsList,
+                        msg: 'success!',
+                        status: 200
+                    })
+                })
+            })
+    }
+})
+
 // 商品搜索
 router.get('/api/private/searchgoods', (req, res) => {
     let {
+        user_id,
         classification,
         query,
         sort
@@ -1015,11 +1095,24 @@ router.get('/api/private/searchgoods', (req, res) => {
                 [sort]: sortDirection
             })
             .then(data => {
-                res.json({
-                    goodsList: data,
-                    msg: 'success!',
-                    status: 200
-                })
+                if (data.length > 0 && user_id) {
+                    new LikeGoods({
+                        user_id,
+                        query
+                    }).save().then(() => {
+                        res.json({
+                            goodsList: data,
+                            msg: 'success!',
+                            status: 200
+                        })
+                    })
+                } else {
+                    res.json({
+                        goodsList: data,
+                        msg: 'success!',
+                        status: 200
+                    })
+                }
             })
     } else {
         Goods.find({
@@ -1043,11 +1136,24 @@ router.get('/api/private/searchgoods', (req, res) => {
                 [sort]: sortDirection
             })
             .then(data => {
-                res.json({
-                    goodsList: data,
-                    msg: 'success!',
-                    status: 200
-                })
+                if (data.length > 0 && user_id) {
+                    new LikeGoods({
+                        user_id,
+                        query
+                    }).save().then(() => {
+                        res.json({
+                            goodsList: data,
+                            msg: 'success!',
+                            status: 200
+                        })
+                    })
+                } else {
+                    res.json({
+                        goodsList: data,
+                        msg: 'success!',
+                        status: 200
+                    })
+                }
             })
     }
 
@@ -1690,129 +1796,145 @@ router.get('/api/private/get/comment', (req, res) => {
     let sort = req.query.sort
     if (sort === '五星好评') {
         Comment.find({
-            goods_id: id,
-            is_delete: 0,
-            stars: 5
-        }).then(data => {
-            let asyncArray = []
-            data.forEach(item => {
-                asyncArray.push(
-                    new Promise((resolve, reject) => {
-                        User.findById(item.user_id).then(user => {
-                            resolve({
-                                comment: item,
-                                user: {
-                                    name: user.name,
-                                    avatar: user.avatar
-                                }
+                goods_id: id,
+                is_delete: 0,
+                stars: 5
+            })
+            .sort({
+                created_time: -1
+            })
+            .then(data => {
+                let asyncArray = []
+                data.forEach(item => {
+                    asyncArray.push(
+                        new Promise((resolve, reject) => {
+                            User.findById(item.user_id).then(user => {
+                                resolve({
+                                    comment: item,
+                                    user: {
+                                        username: user.username,
+                                        avatar: user.avatar
+                                    }
+                                })
                             })
                         })
-                    })
-                )
-            })
+                    )
+                })
 
-            Promise.all(asyncArray).then(result => {
-                res.json({
-                    commentList: result,
-                    msg: 'success!',
-                    status: 200
+                Promise.all(asyncArray).then(result => {
+                    res.json({
+                        commentList: result,
+                        msg: 'success!',
+                        status: 200
+                    })
                 })
             })
-        })
     } else if (sort === '有图') {
         Comment.find({
-            goods_id: id,
-            is_delete: 0,
-            has_img: 1
-        }).then(data => {
-            let asyncArray = []
-            data.forEach(item => {
-                asyncArray.push(
-                    new Promise((resolve, reject) => {
-                        User.findById(item.user_id).then(user => {
-                            resolve({
-                                comment: item,
-                                user: {
-                                    name: user.name,
-                                    avatar: user.avatar
-                                }
+                goods_id: id,
+                is_delete: 0,
+                has_img: 1
+            })
+            .sort({
+                created_time: -1
+            })
+            .then(data => {
+                let asyncArray = []
+                data.forEach(item => {
+                    asyncArray.push(
+                        new Promise((resolve, reject) => {
+                            User.findById(item.user_id).then(user => {
+                                resolve({
+                                    comment: item,
+                                    user: {
+                                        username: user.username,
+                                        avatar: user.avatar
+                                    }
+                                })
                             })
                         })
-                    })
-                )
-            })
+                    )
+                })
 
-            Promise.all(asyncArray).then(result => {
-                res.json({
-                    commentList: result,
-                    msg: 'success!',
-                    status: 200
+                Promise.all(asyncArray).then(result => {
+                    res.json({
+                        commentList: result,
+                        msg: 'success!',
+                        status: 200
+                    })
                 })
             })
-        })
     } else if (sort === '差评') {
         Comment.find({
-            goods_id: id,
-            is_delete: 0,
-            stars: {
-                "$lte": 2
-            }
-        }).then(data => {
-            let asyncArray = []
-            data.forEach(item => {
-                asyncArray.push(
-                    new Promise((resolve, reject) => {
-                        User.findById(item.user_id).then(user => {
-                            resolve({
-                                comment: item,
-                                user: {
-                                    name: user.name,
-                                    avatar: user.avatar
-                                }
+                goods_id: id,
+                is_delete: 0,
+                stars: {
+                    "$lte": 2
+                }
+            })
+            .sort({
+                created_time: -1
+            })
+            .then(data => {
+                let asyncArray = []
+                data.forEach(item => {
+                    asyncArray.push(
+                        new Promise((resolve, reject) => {
+                            User.findById(item.user_id).then(user => {
+                                resolve({
+                                    comment: item,
+                                    user: {
+                                        username: user.username,
+                                        avatar: user.avatar
+                                    }
+                                })
                             })
                         })
-                    })
-                )
-            })
+                    )
+                })
 
-            Promise.all(asyncArray).then(result => {
-                res.json({
-                    commentList: result,
-                    msg: 'success!',
-                    status: 200
+                Promise.all(asyncArray).then(result => {
+                    res.json({
+                        commentList: result,
+                        msg: 'success!',
+                        status: 200
+                    })
                 })
             })
-        })
     } else {
         Comment.find({
-            goods_id: id,
-            is_delete: 0
-        }).then(data => {
-            let asyncArray = []
-            data.forEach(item => {
-                asyncArray.push(
-                    new Promise((resolve, reject) => {
-                        User.findById(item.user_id).then(user => {
-                            resolve({
-                                comment: item,
-                                user: {
-                                    name: user.name,
-                                    avatar: user.avatar
-                                }
+                goods_id: id,
+                is_delete: 0
+            })
+            .sort({
+                created_time: -1
+            })
+            .then(data => {
+                let asyncArray = []
+                data.forEach(item => {
+                    asyncArray.push(
+                        new Promise((resolve, reject) => {
+                            User.findById(item.user_id).then(user => {
+                                resolve({
+                                    comment: item,
+                                    user: {
+                                        username: user.username,
+                                        avatar: user.avatar
+                                    }
+                                })
                             })
                         })
-                    })
-                )
-            })
+                    )
+                })
 
-            Promise.all(asyncArray).then(result => {
-                res.json({
-                    commentList: result,
-                    msg: 'success!',
-                    status: 200
+                Promise.all(asyncArray).then(result => {
+                    res.json({
+                        commentList: result,
+                        msg: 'success!',
+                        status: 200
+                    })
                 })
             })
-        })
     }
 })
 

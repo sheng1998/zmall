@@ -13,6 +13,7 @@
           clearable
           @keyup.enter.native="searchGoods"
           @blur="searchGoods"
+          @input="searchGoods"
         >
           <el-button
             slot="append"
@@ -147,7 +148,7 @@
         </el-table-column>
 
         <!-- 操作 -->
-        <el-table-column label="操作" align="center" width="120">
+        <el-table-column label="操作" fixed="right" align="center" width="120">
           <template slot-scope="scope">
             <div>
               <el-row>

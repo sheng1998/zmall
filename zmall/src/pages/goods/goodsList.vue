@@ -190,12 +190,18 @@ export default {
 
     // 获取商品搜索结果
     getSearchGoodsList () {
+      let loginInfo = this.$mycookie.get('loginInfo')
+      let userId = ''
+      if (loginInfo) {
+        userId = JSON.parse(loginInfo).user_id
+      }
       this.$axios
         .get('/searchgoods', {
           params: {
             classification: this.$route.query.classification,
             query: this.$route.query.query,
-            sort: this.sort
+            sort: this.sort,
+            user_id: userId
           }
         })
         .then(res => {

@@ -30,7 +30,7 @@
           <div class="user-avatar">
             <el-image :src="item.user.avatar"></el-image>
           </div>
-          <div class="username">{{ item.user.name }}</div>
+          <div class="username">{{ item.user.username }}</div>
         </div>
 
         <!-- right -->

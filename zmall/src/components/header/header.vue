@@ -24,9 +24,10 @@
         <div class="search">
           <el-input
             placeholder="Search"
-            v-model="query"
+            v-model="searchValue"
             prefix-icon="el-icon-search"
             @keyup.enter.native="searchGoodsList"
+            @blur="searchGoodsList"
           >
             <el-button
               slot="append"
@@ -80,13 +81,15 @@ export default {
   data () {
     return {
       // 搜索内容
+      searchValue: '',
       query: '',
 
       // 是否已经登录
       isLogin: false,
 
       // logo
-      logo_url: 'http://127.0.0.1:3002/uploads/logo/2f6938c0c02511eb96fbc19a36612af3.png',
+      logo_url:
+        'http://127.0.0.1:3002/uploads/logo/2f6938c0c02511eb96fbc19a36612af3.png',
 
       personalUrl: '',
       orderUrl: '',
@@ -96,7 +99,8 @@ export default {
   },
 
   created () {
-    this.query = this.$route.query.query || ''
+    this.searchValue = this.$route.query.query || ''
+    this.query = this.searchValue
     this.judgingLoginStatus()
     this.$axios.get('/get/logo').then(res => {
       this.logo_url = res.data.data.url
@@ -159,14 +163,43 @@ export default {
       let str = this.$route.query.classification
         ? `classification=${this.$route.query.classification}&`
         : ''
-      if (this.query !== '') {
+      if (this.searchValue !== '' && this.query !== this.searchValue) {
+        this.query = this.searchValue
         this.$router.push({
           path: '/goods/list?' + str + 'query=' + this.query
         })
-      } else {
+      } else if (this.searchValue === '' && this.query !== this.searchValue) {
         this.$router.push({
           path: '/goods/list?' + str
         })
+      }
+    },
+
+    // 在商品列表页面查找
+    searchGoods () {
+      if (this.$route.path === '/goods/list') {
+        this.$debounce.use(
+          () => {
+            let str = this.$route.query.classification
+              ? `classification=${this.$route.query.classification}&`
+              : ''
+            if (this.searchValue !== '' && this.query !== this.searchValue) {
+              this.query = this.searchValue
+              this.$router.push({
+                path: '/goods/list?' + str + 'query=' + this.query
+              })
+            } else if (
+              this.searchValue === '' &&
+              this.query !== this.searchValue
+            ) {
+              this.$router.push({
+                path: '/goods/list?' + str
+              })
+            }
+          },
+          500,
+          true
+        )
       }
     }
   }

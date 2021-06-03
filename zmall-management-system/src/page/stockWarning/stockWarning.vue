@@ -132,7 +132,7 @@
       </el-table-column>
 
       <!-- 操作 -->
-      <el-table-column label="操作" align="center" width="120">
+      <el-table-column label="操作" fixed="right" align="center" width="120">
         <template slot-scope="scope">
           <div>
             <el-row>

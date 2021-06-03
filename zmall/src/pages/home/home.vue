@@ -25,7 +25,7 @@
     <xmf-recommend-goods></xmf-recommend-goods>
 
     <!-- 猜你喜欢区域 -->
-    <!-- <xmf-guess-you-like></xmf-guess-you-like> -->
+    <xmf-guess-you-like></xmf-guess-you-like>
 
     <!-- 尾部 -->
     <xmf-footer></xmf-footer>
@@ -40,7 +40,7 @@ import xmfNav from '../../components/home/nav'
 import xmfCarousel from '../../components/home/carousel'
 import xmfHotGoods from '../../components/home/hotGoods'
 import xmfRecommendGoods from '../../components/goods/recommend'
-// import xmfGuessYouLike from '../../components/home/guessYouLike'
+import xmfGuessYouLike from '../../components/home/guessYouLike'
 import xmfFooter from '../../components/footer/footer'
 import xmfFixedBottom from '../../components/fixedBottom/fixedBottom'
 export default {
@@ -62,7 +62,7 @@ export default {
     xmfCarousel,
     xmfHotGoods,
     xmfRecommendGoods,
-    // xmfGuessYouLike,
+    xmfGuessYouLike,
     xmfFooter,
     xmfFixedBottom
   }

@@ -5,6 +5,8 @@
     <el-card class="goods-list-table">
       <el-row class="addgoods-btn">
         <el-button type="primary" @click="toAddGoods">添加商品</el-button>
+
+        <!-- 搜索商品 -->
         <el-input
           class="search-input"
           ref="search"
@@ -14,6 +16,7 @@
           clearable
           @keyup.enter.native="searchGoods"
           @blur="searchGoods"
+          @input="searchGoods"
         >
           <el-button
             slot="append"
@@ -150,7 +153,7 @@
         </el-table-column>
 
         <!-- 操作 -->
-        <el-table-column label="操作" align="center" width="120">
+        <el-table-column label="操作" fixed="right" align="center" width="120">
           <template slot-scope="scope">
             <div>
               <el-row>
